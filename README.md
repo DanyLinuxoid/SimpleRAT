@@ -7,6 +7,7 @@ Developed for Windows.
 Currently is FUD as it is small and simple, without any specific features.
 
 TODO/Plans: 
+
 0. Error display (for example if cmd command was misspelled)
 1. File upload/download;
 2. Merge JSON configuration into exe file;

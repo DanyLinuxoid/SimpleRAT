@@ -1,10 +1,8 @@
 ﻿using RAT.src.Configurations;
 using RAT.src.Models;
 using RAT.src.Sockets;
-using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace RAT.src.SocketLogic
 {

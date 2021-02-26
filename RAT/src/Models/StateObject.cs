@@ -5,6 +5,9 @@ using System.Text;
 
 namespace RAT.src.Models
 {
+    /// <summary>
+    /// Represents our client with his current state.
+    /// </summary>
     public class StateObject
     {
         // Receive buffer.
@@ -13,12 +16,15 @@ namespace RAT.src.Models
         // Received data string.
         public StringBuilder DataBuilder { get; set; } = new StringBuilder();
 
-        // Client socket.
+        // Client socket on which connection currently happens.
         public Socket ClientSocket { get; set; }
 
-        // Async state.
+        // Async socket state.
         public IAsyncResult AsyncState { get; set; }
 
+        /// <summary>
+        /// Cmd process related to client.
+        /// </summary>
         public Process ClientCmdProcess { get; set; }
     }
 }

@@ -8,4 +8,5 @@ Currently is FUD as it is small and simple, without any specific features.
 
 TODO/Plans: 
 1. File upload/download;
-2. Register in registry for startup;
+2. Merge JSON configuration into exe file;
+3. Register in registry for startup;

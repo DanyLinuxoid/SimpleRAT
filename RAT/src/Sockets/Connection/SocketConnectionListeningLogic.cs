@@ -4,7 +4,7 @@ using RAT.src.Models;
 using System.Net;
 using System.Net.Sockets;
 
-namespace RAT.src.SocketLogic
+namespace RAT.src.Sockets.Connection
 {
     /// <summary>
     /// Class contains logic for socket initial setup before socket messaging system start, listening logic.

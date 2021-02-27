@@ -34,8 +34,7 @@ namespace RAT.src.Sockets
             }
             else
             {
-                // Get the socket that handles the client request
-                // and update state object with it's values.
+                // Get the socket that handles the client request.
                 handler = (Socket)result.AsyncState;
                 state = State;
             }

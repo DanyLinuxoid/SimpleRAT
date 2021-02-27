@@ -26,7 +26,7 @@ namespace RAT.src.Configurations
         public IPEndPoint GetLocalEndpointConfigurationForSocket()
         {
             // Get json configuration.
-            BackdoorConfiguration configuration = BackdoorConfigurator.GetBackdoorConfiguration();
+            BackdoorConfiguration configuration = new BackdoorConfigurator().GetBackdoorConfiguration();
             return new IPEndPoint(IPAddress.Any, configuration.ConnectionPort);
         }
     }

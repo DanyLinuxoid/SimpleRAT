@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 
 namespace RAT.src.Interfaces
 {
@@ -8,9 +9,15 @@ namespace RAT.src.Interfaces
     public interface ISocketConnectionDisconnectLogic
     {
         /// <summary>
-        /// Disconnects client from socket without closing connection itself and kills process associated with client.
+        /// Disconnects client but preserves socket.
         /// </summary>
-        /// <param name="res">State of async socket operation.</param>
-        void OnDisconnect(IAsyncResult res);
+        /// <param name="socket">Current connection.</param>
+        void DisconnectFromMainSocket(Socket socket);
+
+        /// <summary>
+        /// Disconnects client from file download socket but preserves socket.
+        /// </summary>
+        /// <param name="fileDownloadSocket">Current connection.</param>
+        void DisconnectFromFileDownloadSocket(Socket fileDownloadSocket);
     }
 }

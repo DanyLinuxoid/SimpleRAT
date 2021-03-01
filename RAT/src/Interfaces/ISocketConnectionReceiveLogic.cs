@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 
 namespace RAT.src.Interfaces
 {
@@ -8,9 +9,9 @@ namespace RAT.src.Interfaces
     public interface ISocketConnectionReceiveLogic
     {
         /// <summary>
-        /// Socket receival logic handling.
+        /// Wrapper for initial command receive, any command receive starts from here.
         /// </summary>
-        /// <param name="res">Status of asynchronous operation.</param>
-        void OnReceive(IAsyncResult res);
+        /// <param name="socket">Our connection.</param>
+        void BeginCommandReceive(Socket socket);
     }
 }

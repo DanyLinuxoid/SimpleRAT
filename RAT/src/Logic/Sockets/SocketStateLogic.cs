@@ -1,29 +1,39 @@
-﻿using RAT.src.Models;
+﻿using RAT.src.Interfaces;
+using RAT.src.Models;
 using System;
 
-namespace RAT.src.Interfaces
+namespace RAT.src.Logic.Sockets
 {
     /// <summary>
     /// Holds logic for client state management.
     /// </summary>
-    public interface ISocketStateLogic
+    public class SocketStateLogic : ISocketStateLogic
     {
         /// <summary>
         /// Client state representation and connection information holder.
         /// </summary>
-        StateObject State { get; }
+        public StateObject State { get; private set; } = new StateObject();
 
         /// <summary>
         /// Gets state from async result during socket connections.
         /// </summary>
         /// <param name="result">Status of async operation.</param>
         /// <returns>Updated state object.</returns>
-        StateObject GetStateFromAsyncResult(IAsyncResult result);
+        public StateObject GetStateFromAsyncResult(IAsyncResult result)
+        {
+            // Retrieve the state object from the asynchronous result.
+            return result.AsyncState is StateObject
+                ? (StateObject)result.AsyncState
+                : State;
+        }
 
         /// <summary>
         /// Updates state to provided one.
         /// </summary>
         /// <param name="state">State to update/set with.</param>
-        void SetState(StateObject state);
+        public void SetState(StateObject state)
+        {
+            this.State = state;
+        }
     }
 }

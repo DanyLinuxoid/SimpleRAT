@@ -4,7 +4,7 @@ using RAT.src.Models;
 using System.Net;
 using System.Net.Sockets;
 
-namespace RAT.src.Sockets.Connection
+namespace RAT.src.Logic.Sockets.Connection
 {
     /// <summary>
     /// Class contains logic for socket initial setup before socket messaging system start, listening logic.
@@ -12,14 +12,19 @@ namespace RAT.src.Sockets.Connection
     public class SocketConnectionListeningLogic : ISocketConnectionListeningLogic
     {
         private ISocketConnectionAcceptLogic _socketConnectionAcceptLogic { get; }
+        private ISocketConfigurator _socketConfiguration { get; }
 
         /// <summary>
         /// Class contains logic for socket initial setup before socket messaging system start, listening logic.
         /// </summary>
         /// <param name="acceptLogic">Logic for connection acceptance.</param>
-        public SocketConnectionListeningLogic(ISocketConnectionAcceptLogic acceptLogic)
+        /// <param name="socketConfigurator">Socket and endpoint configurations.</param>
+        public SocketConnectionListeningLogic(
+            ISocketConnectionAcceptLogic acceptLogic,
+            ISocketConfigurator socketConfigurator)
         {
             _socketConnectionAcceptLogic = acceptLogic;
+            _socketConfiguration = socketConfigurator;
         }
 
         /// <summary>
@@ -28,9 +33,8 @@ namespace RAT.src.Sockets.Connection
         public void StartListening()
         {
             // Get socket configuration with local endpoint binding.
-            var socketConfigurator = new SocketConfigurator();
-            Socket socket = socketConfigurator.GetConfiguredSocket();
-            IPEndPoint localEndPoint = socketConfigurator.GetLocalEndpointConfigurationForSocket();
+            Socket socket = _socketConfiguration.GetConfiguredSocket();
+            IPEndPoint localEndPoint = _socketConfiguration.GetLocalEndpointConfigurationForStandartSocket();
 
             socket.Bind(localEndPoint);
 
@@ -41,7 +45,7 @@ namespace RAT.src.Sockets.Connection
             {
                 // Block thread until someone knocks.
                 ManualResetEventWrapper.ResetEvent.Reset();
-                socket.BeginAccept(_socketConnectionAcceptLogic.OnAccept, socket);
+                _socketConnectionAcceptLogic.BeginAccept(socket);
                 ManualResetEventWrapper.ResetEvent.WaitOne();
             }
         }

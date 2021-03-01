@@ -45,7 +45,7 @@ namespace RAT.src.Logic.Sockets.Connection
             // We will create new socket for file downloading, not to cause mess and reuse the main one.
             // Also netcat is not working with file download if socket is being reused
             // Let's keep everything clean :)
-            var remoteIp = (_stateLogic.State.ClientSocket.RemoteEndPoint as IPEndPoint).Address;
+            var remoteIp = (_stateLogic.State.ClientMainSocket.RemoteEndPoint as IPEndPoint).Address;
             IPEndPoint remoteEndPoint = _socketConfigurator.GetRemoteEndpointConfigurationForFileDownloadSocket(remoteIp);
             socketForFileDownload = _socketConfigurator.GetConfiguredSocket();
 

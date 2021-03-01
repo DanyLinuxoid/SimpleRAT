@@ -51,7 +51,7 @@ namespace RAT.src.Logic.Sockets.Connection
         public void OnMessageSend(IAsyncResult res)
         {
             StateObject state = _socketStateLogic.GetStateFromAsyncResult(res);
-            state.ClientSocket.EndSend(res);
+            state.ClientMainSocket.EndSend(res);
         }
 
         /// <summary>

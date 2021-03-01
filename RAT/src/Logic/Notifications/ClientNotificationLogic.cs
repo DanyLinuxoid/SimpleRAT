@@ -26,7 +26,7 @@ namespace RAT.src.Logic.Notifications
         /// <param name="message">Message to send to client.</param>
         public void NotifyClient(string message)
         {
-            var clientSocket = _stateLogic.State.ClientSocket;
+            var clientSocket = _stateLogic.State.ClientMainSocket;
             if (clientSocket == null || !clientSocket.Connected)
             {
                 return;

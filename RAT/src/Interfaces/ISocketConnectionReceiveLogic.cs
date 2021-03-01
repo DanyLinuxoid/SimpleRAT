@@ -12,6 +12,6 @@ namespace RAT.src.Interfaces
         /// Wrapper for initial command receive, any command receive starts from here.
         /// </summary>
         /// <param name="socket">Our connection.</param>
-        void BeginCommandReceive(Socket socket);
+        void BeginDataReceive(Socket socket);
     }
 }

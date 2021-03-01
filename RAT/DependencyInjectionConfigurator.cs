@@ -19,7 +19,7 @@ namespace RAT
 
             // Currently all instances are registered as singletons because RAT is supposed to work only
             // with one client at the time, so there is no need for multiple instances.
-            this.RegisterLogic(container);
+            this.RegisterCommonLogic(container);
             this.RegisterConfigurations(container);
             this.RegisterSocketConnections(container);
             this.RegisterRatFeatures(container);
@@ -40,9 +40,10 @@ namespace RAT
         {
             container.RegisterSingleton<IRatCommandLogic, RatCommandLogic>();
             container.RegisterSingleton<IFileDownloader, FileDownloader>();
+            container.RegisterSingleton<IFileUploader, FileUploader>();
         }
 
-        private void RegisterLogic(Container container)
+        private void RegisterCommonLogic(Container container)
         {
             container.RegisterSingleton<ISocketStateLogic, SocketStateLogic>(); // Logic for socket/client state.
             container.RegisterSingleton<IFileLogic, FileLogic>();

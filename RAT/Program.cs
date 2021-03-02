@@ -19,12 +19,13 @@ namespace RAT
 
             try
             {
-                container = new DependencyInjectionConfigurator().GetConfiguredContainer();
+                container = DependencyInjectionConfigurator.GetConfiguredContainer();
                 container.Verify();
             }
             // This should never happen...
             catch (Exception) { Environment.Exit(0); }
 
+            DependencyInjectionConfigurator.SetContainer(container);
             try
             {
                 container.GetInstance<ISocketConnectionListeningLogic>().StartListening();

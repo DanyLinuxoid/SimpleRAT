@@ -58,7 +58,7 @@ namespace RAT.src.Logic.RatCommands.Features
             }
 
             _sendingLogic.SendDataToClient(socketForFileDownload, fileBytes, _sendingLogic.OnFileSend);
-            _disconnectLogic.DisconnectFromFileDownloadSocket(socketForFileDownload);
+            _disconnectLogic.DisconnectSocket(socketForFileDownload);
         }
     }
 }

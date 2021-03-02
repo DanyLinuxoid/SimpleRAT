@@ -15,9 +15,9 @@ namespace RAT.src.Interfaces
         void DisconnectFromMainSocket(Socket socket);
 
         /// <summary>
-        /// Disconnects client from file download socket but preserves socket.
+        /// Disconnects client specified socket, should not be used for main socket.
         /// </summary>
-        /// <param name="fileDownloadSocket">Current connection.</param>
-        void DisconnectFromFileDownloadSocket(Socket fileDownloadSocket);
+        /// <param name="socket">Socket that client should be disconnected from.</param>
+        void DisconnectSocket(Socket socket);
     }
 }

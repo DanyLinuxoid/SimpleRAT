@@ -9,9 +9,15 @@ namespace RAT.src.Interfaces
     public interface ISocketConnectionReceiveLogic
     {
         /// <summary>
-        /// Wrapper for initial command receive, any command receive starts from here.
+        /// Wrapper for command receive.
         /// </summary>
         /// <param name="socket">Our connection.</param>
-        void BeginDataReceive(Socket socket);
+        void BeginCommandReceive(Socket socket);
+
+        /// <summary>
+        /// Wrapper for file data receive.
+        /// </summary>
+        /// <param name="socket">Our connection.</param>
+        void BeginFileDataReceive(Socket socket);
     }
 }

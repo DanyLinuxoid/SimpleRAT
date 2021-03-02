@@ -31,27 +31,26 @@ namespace RAT.src.Logic.Sockets.Connection
         }
 
         /// <summary>
-        /// Disconnects client from file download socket.
+        /// Disconnects client specified socket, should not be used for main socket.
         /// </summary>
-        /// <param name="fileDownloadSocket">Current connection.</param>
-        public void DisconnectFromFileDownloadSocket(Socket fileDownloadSocket)
+        /// <param name="socket">Socket that client should be disconnected from.</param>
+        public void DisconnectSocket(Socket socket)
         {
-            if (fileDownloadSocket == null)
+            if (socket == null)
             {
                 return;
             }
 
-            if (fileDownloadSocket.Connected)
+            try
             {
-                fileDownloadSocket.Disconnect(reuseSocket: false);
+                socket.Disconnect(reuseSocket: false);
+                socket.Close();
             }
-
-            fileDownloadSocket.Close();
-            _socketStateLogic.State.ClientFileDownloadSocket = null;
+            catch (Exception) { }
         }
 
         /// <summary>
-        /// Disconnects client from socket without closing connection itself and kills process associated with client.
+        /// Disconnects client from main socket without closing connection itself and kills process associated with client. Closes all socket except main.
         /// </summary>
         /// <param name="res">State of async socket operation.</param>
         private void OnMainSocketDisconnect(IAsyncResult res)
@@ -60,7 +59,9 @@ namespace RAT.src.Logic.Sockets.Connection
             state.ClientMainSocket.EndDisconnect(res);
 
             // Now disconnect from file download socket.
-            this.DisconnectFromFileDownloadSocket(state.ClientFileDownloadSocket);
+            this.DisconnectSocket(state.ClientFileDownloadSocket);
+            state.ClientFileDownloadSocket = null;
+            this.DisconnectSocket(state.FileUploadInformation.ClientFileUploadSocket);
 
             state.ResetState();
         }

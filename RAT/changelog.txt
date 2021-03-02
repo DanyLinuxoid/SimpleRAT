@@ -1,7 +1,10 @@
 --------------------------------------------------------------
+0.3 BETA 
+- Added file upload option (from client to victim)
+--------------------------------------------------------------
 0.2 BETA 
 - Bugfixes
-- Added file download option
+- Added file download option (from victim to client)
 --------------------------------------------------------------
 0.1 BETA
 - Initial BETA release

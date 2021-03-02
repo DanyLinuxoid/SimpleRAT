@@ -34,12 +34,12 @@ Example: ncat 192.168.88.220 8888
 
 2. Check if reverse shell is working (cd, dir)
 
-3. Put RAT in listenning state by executing - RAT upload file -p <path/to/file.exe> -s <size of file in bytes>
+3. Put RAT in listenning state by executing:
+RAT upload file -p <path/to/file.exe> -s <size of file (bytes)>
 
 Example: RAT upload file -p C:\Users\someuser\checkme\ConsoleApp4.exe -s 4096
 
 4. Send file through netcat on main port of your RAT
-
 Example: ncat 192.168.88.230 8888 --send-only < ConsoleApp4.exe
 
 Process:

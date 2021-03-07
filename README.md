@@ -53,12 +53,12 @@ Currently RAT is FUD as it is small and simple, without any specific features.
 
 ## Downsides
 1. High .exe application size (35 MB) 
-   From one side such size is bad, from other side you could mask program with such size as other legitimate one :)
 2. High memory usage
 
 ![rat-memory](https://user-images.githubusercontent.com/53906830/110226932-73ce8880-7ef3-11eb-9f0e-b455832e95b4.png)
 
 Both problems are because RAT is self-contained application with builded-in .NET runtime.
+From one side those are problems for sure, from other side you could mask program with such size and memory usage as other legitimate one :)
 
 ### Features To Be Done: 
 

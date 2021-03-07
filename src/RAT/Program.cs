@@ -16,7 +16,6 @@ namespace RAT
         private static void Main(string[] args)
         {
             Container container = null;
-
             try
             {
                 container = DependencyInjectionConfigurator.GetConfiguredContainer();

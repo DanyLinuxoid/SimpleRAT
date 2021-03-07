@@ -8,10 +8,9 @@ namespace RAT.Interfaces
     public interface ICmdLogic
     {
         /// <summary>
-        /// This will send command execution output result to client regardless of output being error or not.
+        /// Creates and configures new cmd process.
         /// </summary>
-        /// <param name="sendingProcess">Sender.</param>
-        /// <param name="outLine">Event sender's data.</param>
-        void CmdOutputDataHandler(object sendingProcess, DataReceivedEventArgs outLine);
+        /// <returns>Launched cmd process.</returns>
+        Process CreateNewCmdProcess();
     }
 }

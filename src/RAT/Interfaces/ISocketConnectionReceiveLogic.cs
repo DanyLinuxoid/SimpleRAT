@@ -18,6 +18,6 @@ namespace RAT.Interfaces
         /// Wrapper for file data receive.
         /// </summary>
         /// <param name="socket">Our connection.</param>
-        void BeginFileDataReceive(Socket socket);
+        void BeginFileReceive(Socket socket);
     }
 }

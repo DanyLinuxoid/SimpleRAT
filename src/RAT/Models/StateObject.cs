@@ -1,4 +1,5 @@
 ﻿using RAT.Interfaces;
+using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
@@ -55,8 +56,15 @@ namespace RAT.Models
             DataBuilder = new StringBuilder();
             ClientCmdProcess.Kill();
             CurrentRatCommand.Abort();
-            FileUploadInformation = new FileUploadInformation();
             ClientFileDownloadSocket = null;
+
+            try
+            {
+                FileUploadInformation?.FileHandle.Dispose();
+                FileUploadInformation?.FileHandle.Close();
+            }
+            catch (Exception) { }
+            FileUploadInformation = new FileUploadInformation();
         }
     }
 }

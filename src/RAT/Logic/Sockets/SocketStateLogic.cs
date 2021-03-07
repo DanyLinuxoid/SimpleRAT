@@ -1,6 +1,9 @@
-﻿using RAT.Interfaces;
+﻿using RAT.Cmd;
+using RAT.Interfaces;
 using RAT.Models;
 using System;
+using System.Diagnostics;
+using System.Net.Sockets;
 
 namespace RAT.Logic.Sockets
 {
@@ -28,12 +31,21 @@ namespace RAT.Logic.Sockets
         }
 
         /// <summary>
-        /// Updates state to provided one.
+        /// Creates new state for new connection.
         /// </summary>
-        /// <param name="state">State to update/set with.</param>
-        public void SetState(StateObject state)
+        /// <param name="handler">Connection related to client/state.</param>
+        public StateObject CreateNewState(Socket handler)
         {
-            this.State = state;
+            // Create the state object with cmd process attached to client.
+            // This represents client with all needed information.
+            var clientState = new StateObject()
+            {
+                ClientMainSocket = handler,
+                FileUploadInformation = new FileUploadInformation(),
+            };
+
+            this.State = clientState;
+            return clientState;
         }
     }
 }

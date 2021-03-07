@@ -43,7 +43,7 @@ namespace RAT.Logic.RatCommands.Commands
                 "Usage: RAT <command> <arguments>\n" +
                 "Available commands: file upload, file download, abort, help\n" +
                 "Examples:\n" +
-                "       file uploading example: RAT file upload -p(path) path/to/exe -s(file size in bytes) 4096\n" +
+                "       file uploading example: RAT file upload -p(path) path/to/exe\n" +
                 "       file downloading example: RAT file download -p(path) path/to/exe\n" +
                 "       operation abort: RAT abort\n" +
                 "       print help: RAT help\n";

@@ -60,13 +60,13 @@ namespace RAT.Logic.Sockets.Connection
         /// <param name="asyncResult">State of async result.</param>
         public void OnFileSend(IAsyncResult asyncResult)
         {
-            // Signal to remote that file download finished.
             StateObject state = _socketStateLogic.GetStateFromAsyncResult(asyncResult);
-            Socket fileDownloadSocket = state.ClientFileDownloadSocket;
-            fileDownloadSocket.EndSend(asyncResult);
-
-            // Signal to client that download finished.
-            _notificationLogic.NotifyClient($"\nFile download finished\n");
+            try
+            {
+                state.ClientFileDownloadSocket.EndSend(asyncResult);
+            }
+            // To catch disposed objects.
+            catch (ObjectDisposedException) { }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using RAT.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace RAT.Logic.Files
@@ -21,29 +22,29 @@ namespace RAT.Logic.Files
         }
 
         /// <summary>
-        /// Tries to read bytes of file by provided path.
+        /// Checks if file on path is valid by checking if it exists and if size more than 0 bytes.
         /// </summary>
-        /// <param name="path">Path to file.</param>
-        /// <returns>Array filled with file bytes, if error occured then returns empty array.</returns>
-        public byte[] GetFileBytesByPath(string path)
+        /// <param name="path">Path to file to check.</param>
+        /// <returns>True if file is valid, false otherwise.</returns>
+        public bool IsValidFile(string path)
         {
-            byte[] fileBytes = new byte[0];
             if (!File.Exists(path))
             {
                 _notificationLogic.NotifyClient($"\nFile on path \"{path}\" does not exist or is directory\n");
-                return fileBytes;
+                return false;
             }
 
+            long fileSize = 0;
             try
             {
-                fileBytes = File.ReadAllBytes(path); // Be aware that this can cause trouble with big files.
+                fileSize = new FileInfo(path).Length;
             }
             catch (Exception exception)
             {
-                _notificationLogic.NotifyClient($"\nError during file read:\n{exception.Message}\n");
+                _notificationLogic.NotifyClient($"Error during file check: {exception.Message}");
             }
 
-            return fileBytes;
+            return fileSize <= 0;
         }
     }
 }

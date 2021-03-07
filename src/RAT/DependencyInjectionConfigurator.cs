@@ -9,6 +9,7 @@ using RAT.Logic.RatCommands.Commands;
 using RAT.Logic.RatCommands.Features;
 using RAT.Logic.Sockets;
 using RAT.Logic.Sockets.Connection;
+using RAT.Logic.Sockets.Connection.SocketConnectionReceive;
 using SimpleInjector;
 
 namespace RAT
@@ -46,12 +47,13 @@ namespace RAT
             container.RegisterSingleton<ISocketConnectionAcceptLogic, SocketConnectionAcceptLogic>();
             container.RegisterSingleton<ISocketConnectionDisconnectLogic, SocketConnectionDisconnectLogic>();
             container.RegisterSingleton<ISocketConnectionReceiveLogic, SocketConnectionReceiveLogic>();
+            container.RegisterSingleton<ISocketConnectionFileReceiveLogic, SocketConnectionFileReceiveLogic>();
+            container.RegisterSingleton<ISocketConnectionCommandReceiveLogic, SocketConnectionCommandReceiveLogic>();
             container.RegisterSingleton<ISocketConnectionSendingLogic, SocketConnectionSendingLogic>();
         }
 
         private static void RegisterRatFeatures(Container container)
         {
-            container.RegisterSingleton<IRatCommandLogic, RatCommandLogic>();
             container.RegisterSingleton<IFileDownloader, FileDownloader>();
             container.RegisterSingleton<IFileUploader, FileUploader>();
             RegisterCommands(container);
@@ -61,7 +63,7 @@ namespace RAT
         {
             container.RegisterSingleton<ISocketStateLogic, SocketStateLogic>(); // Logic for socket/client state.
             container.RegisterSingleton<IFileLogic, FileLogic>();
-            container.RegisterSingleton<ICmdLogic, CmdOutputHandler>();
+            container.RegisterSingleton<ICmdLogic, CmdLogic>();
             container.RegisterSingleton<IClientNotificationLogic, ClientNotificationLogic>();
             container.RegisterSingleton<IRatCommandInterpreter, RatCommandInterpreter>();
         }
@@ -78,6 +80,7 @@ namespace RAT
 
         private static void RegisterCommands(Container container)
         {
+            container.RegisterSingleton<IRatCommandLogic, RatCommandLogic>();
             container.Register<IDownloadFileCommand, DownloadFileCommand>();
             container.Register<IUploadFileCommand, UploadFileCommand>();
             container.Register<IShowHelpCommand, ShowHelpCommand>();

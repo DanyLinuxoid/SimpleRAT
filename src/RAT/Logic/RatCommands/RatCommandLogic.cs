@@ -43,7 +43,7 @@ namespace RAT.Logic.RatCommands
             (bool isKnownRatCommand, string ratCommandInStringFormat) = _ratCommandInterpreter.IsKnownRatCommand(command);
             if (!isKnownRatCommand)
             {
-                _notificationLogic.NotifyClient($"\nCommand \"{command}\" is unknown RAT command\n");
+                _notificationLogic.NotifyClient($"\nUnknown RAT command\n");
                 return;
             }
 

@@ -1,6 +1,6 @@
 ﻿using RAT.Models.Enums;
+using System.IO;
 using System.Net.Sockets;
-using System.Text;
 
 namespace RAT.Models
 {
@@ -20,14 +20,21 @@ namespace RAT.Models
         public FileUploadProgress FileUploadProgress { get; set; }
 
         /// <summary>
+        /// Buffer to store file data during upload.
+        /// NOTE: Currently 1MB is set for receival buffer, there is no need to place more unless
+        /// https://github.com/nmap/nmap/issues/1026 will be resolved.
+        /// </summary>
+        public int FileDataArraySizeInBytes = 1 * 1024 * 1024; // 1MB
+
+        /// <summary>
         /// Contains file data in byte format.
         /// </summary>
         public byte[] FileDataArray { get; set; }
 
         /// <summary>
-        /// Contains uploaded data in Base64 string format.
+        /// Our current file handle that is in progress of uploading.
         /// </summary>
-        public StringBuilder FileDataBuilder { get; set; } = new StringBuilder();
+        public FileStream FileHandle { get; set; }
 
         /// <summary>
         /// Path to which file is uploaded.

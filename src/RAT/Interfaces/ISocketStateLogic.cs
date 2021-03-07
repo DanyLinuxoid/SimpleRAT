@@ -1,5 +1,6 @@
 ﻿using RAT.Models;
 using System;
+using System.Net.Sockets;
 
 namespace RAT.Interfaces
 {
@@ -21,9 +22,9 @@ namespace RAT.Interfaces
         StateObject GetStateFromAsyncResult(IAsyncResult result);
 
         /// <summary>
-        /// Updates state to provided one.
+        /// Creates new state for new connection.
         /// </summary>
-        /// <param name="state">State to update/set with.</param>
-        void SetState(StateObject state);
+        /// <param name="handler">Connection related to client/state.</param>
+        StateObject CreateNewState(Socket handler);
     }
 }

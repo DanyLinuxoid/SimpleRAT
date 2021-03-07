@@ -2,10 +2,13 @@
 
 Self-contained RAT/Backdoor written fully in C#.
 After installation and launch, listens on port specified in JSON configuration. After successfull connection gives remote shell.
-Developed for Windows, Fully compatible with Netcat (tested with windows version). Requires NO additional server setups for file downloads or uploads, NO additional dll's or configuration files, only one .exe and netcat on your side.
+Developed for Windows, Fully compatible with Netcat (tested with windows version). 
+NO additional server setups for file downloads or uploads
+NO additional dll's or configuration files 
+Only one .exe and netcat on your side.
 
 # What RAT can
-1. After connection on specified port (provided in JSON file, which can be changed as you wishand should be merged into exe after that by using provided tool), gives reverse shell.
+1. After connection on specified port (provided in JSON file, which can be changed as you wish and should be merged into exe after that by using provided tool), gives reverse shell.
 2. Is able to download any files from victim's PC on specified port (provided in JSON file) and upload files on victim PC, no need for server setup or anything, only netcat on your side and launched RAT on victim's side :)
 ### How to download files:
 1. Put netcat on listening state (ncat -v -l -p "port for file download from JSON" > "file name with extension that you want to download")

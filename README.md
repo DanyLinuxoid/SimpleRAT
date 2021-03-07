@@ -64,3 +64,4 @@ From one side those are problems for sure, from other side you could mask progra
 
 1. Self startup;
 2. Automatic ports opening required for communication;
+3. RAT as Windows Service (?)

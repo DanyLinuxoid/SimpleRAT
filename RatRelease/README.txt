@@ -1,6 +1,6 @@
 1 Step - configure backdoor config with main port over which connection will happen + port for file download (to which port backdoor should knock in order to upload file on your PC/server)
 
-2 Step - merge configuration into .exe by using merge programm. It will append encrypted JSON file at the end of RAT.exe, which will be decrypted and red by RAT during launch.
+2 Step - merge configuration into .exe by using merge program. It will append encrypted JSON file at the end of RAT.exe, which will be decrypted and red by RAT during launch.
 NOTE/S:
   RAT will be unable to start without configuration! 
   Use only JSON configuration!

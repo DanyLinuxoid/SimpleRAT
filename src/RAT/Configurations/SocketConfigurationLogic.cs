@@ -11,16 +11,19 @@ namespace RAT.Configurations
     public class SocketConfigurationLogic : ISocketConfigurationLogic
     {
         /// <summary>
-        /// Our static configuration.
+        /// Our configuration.
         /// </summary>
         private BackdoorConfiguration _backdoorConfiguration { get; }
 
         /// <summary>
         /// Socket configuration logic.
         /// </summary>
-        public SocketConfigurationLogic()
+        public SocketConfigurationLogic(IBackdoorConfigurationLogic backdoorConfigurationLogic)
         {
-            _backdoorConfiguration = new BackdoorConfigurationLogic().GetBackdoorConfiguration();
+            if (_backdoorConfiguration == null)
+            {
+                _backdoorConfiguration = backdoorConfigurationLogic.Configure();
+            }
         }
 
         /// <summary>

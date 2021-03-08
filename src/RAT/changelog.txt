@@ -1,10 +1,14 @@
 --------------------------------------------------------------
-0.4 BETA 
+0.5 BETA 
 - Added self-startup for RAT, now it is able to start after PC boot (new registry key)
 --------------------------------------------------------------
-0.3.1 BETA 
+0.4.1 BETA 
 - Refactored file upload feature (simplified, not it requires no "-s"(size) option) + added more output
 - Memory leak and allocation fixes for file uploads/downloads
+--------------------------------------------------------------
+0.4 BETA
+- Added JSON merge program for RAT and new logic in RAT to read configuration from itself.
+New utility provides easy way to merge JSON configuration into .exe
 --------------------------------------------------------------
 0.3 BETA 
 - Added file upload option (from client to victim)

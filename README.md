@@ -1,6 +1,6 @@
 # SimpleRAT
 
-Self-contained RAT/Backdoor written fully in C#.
+Self-contained Remote-Access-Trojan/Backdoor written fully in C#.
 After installation and launch, listens on port specified in JSON configuration. After successfull connection gives remote shell.
 Configured for self-startup (key in registry)
 Developed for Windows, Fully compatible with Netcat (tested with windows version). 
@@ -50,18 +50,18 @@ Example: ncat 192.168.88.230 8888 --send-only < ConsoleApp4.exe
 Process:
 ![rat-upload](https://user-images.githubusercontent.com/53906830/110226904-37029180-7ef3-11eb-897b-8c7db2e9a581.png)
 
-Currently RAT is FUD as it is small and simple, without any specific features.
-
 ## Downsides
-1. High .exe application size (35 MB) 
-2. High memory usage
+1. Is detected by Kasperky (Heuristic) on full protection as Trojan.Win32.Generic
+2. High .exe application size (35 MB) 
+3. High memory usage
 
 ![rat-memory](https://user-images.githubusercontent.com/53906830/110226932-73ce8880-7ef3-11eb-9f0e-b455832e95b4.png)
 
-Both problems are because RAT is self-contained application with builded-in .NET runtime.
+Both size and memory problems are because RAT is self-contained application with builded-in .NET runtime.
 From one side those are problems for sure, from other side you could mask program with such size and memory usage as other legitimate one :)
 
 ### Features To Be Done: 
 
 1. Automatic ports opening required for communication;
 2. RAT as Windows Service (?)
+3. Bypass heuristic (?)

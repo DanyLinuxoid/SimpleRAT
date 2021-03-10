@@ -12,5 +12,10 @@ namespace RAT.Interfaces
         /// </summary>
         /// <returns>Launched cmd process.</returns>
         Process CreateNewCmdProcess();
+
+        /// <summary>
+        /// Creates process only to execute passed in command.
+        /// </summary>
+        void CreateCmdExecuteCommandAndKillCmd(string command);
     }
 }

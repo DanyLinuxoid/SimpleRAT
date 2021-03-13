@@ -49,7 +49,7 @@ Example: RAT upload file -p C:\Users\someuser\checkme\ConsoleApp4.exe
 Example: ncat 192.168.88.230 8888 --send-only < ConsoleApp4.exe
 
 Process:
-![rat-upload](https://user-images.githubusercontent.com/53906830/110226904-37029180-7ef3-11eb-897b-8c7db2e9a581.png)
+![receivefile](https://user-images.githubusercontent.com/53906830/111041705-dcf55500-8439-11eb-8eac-f7e0c1d897ba.png)
 
 ## Downsides
 1. During first launch Windows Firewall will give popup asking user if he allows RAT to access firewall (i.e open port), data that is provided can be modified by editing exe metadata.

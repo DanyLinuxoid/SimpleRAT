@@ -5,8 +5,7 @@ After installation and launch, listens on port specified in JSON configuration. 
 Configured for self-startup (key in registry)
 Developed for Windows, Fully compatible with Netcat (tested with windows version). 
 NO additional server setups for file downloads or uploads
-NO additional dll's or configuration files 
-Only one .exe and netcat on your side.
+NO additional dll's or configuration files that should be uploaded
 
 # What RAT can
 1. Auto-open port on victim PC
